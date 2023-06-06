@@ -1,0 +1,62 @@
+a=4
+case a:
+    1:
+        print("one")
+    2:
+        print("two")
+    3:
+        print("three")
+    4:
+        print("four")
+    5:
+        print("five")
+    6:
+        print("six")
+
+case "five":
+    "one":
+        print(1)
+    "two":
+        print(2)
+    "three":
+        print(3)
+    "four":
+        print(4)
+    "five":
+        print(5)
+    "six":
+        print(6)
+
+case "Nine" :
+    "one":
+        print(1)
+    "two":
+        print(2)
+    "three":
+        print(3)
+    "four":
+        print(4)
+    "five":
+        print(5)
+    "six":
+        print(6)
+    $:
+        print("case not found")
+
+case "five":
+    "one":
+        print(1)
+    "two":
+        print(2)
+    "three":
+        print(3)
+    "four":
+        print(4)
+    "five", "six":
+        print("5 or 6")
+
+case 10:
+    1, 2:
+        print("1!")
+    10:
+        print("10!")

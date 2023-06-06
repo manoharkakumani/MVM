@@ -1,0 +1,7 @@
+a=[1,2,3,4] 
+b=[1,2,3,]
+c=a.copy()
+print(a,b,c)
+a.append(10)
+print(a,c)
+print(b.__len__())

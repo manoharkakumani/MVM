@@ -1,0 +1,10 @@
+a= 'Manohar'
+b= "Kakumani"
+c=`
+hello Manohar!!
+How are you?
+`
+
+print(a)
+print(c)
+print(a+b)

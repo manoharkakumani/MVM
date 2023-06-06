@@ -1,0 +1,4 @@
+print(1)
+print(123)
+a=24
+print(a,type(a))

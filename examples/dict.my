@@ -1,0 +1,11 @@
+a = {
+    1:"one",
+    2:"two"
+}
+
+b = {
+    "one":1,
+    "two":2
+}
+print(a,b)
+print(b["one"])

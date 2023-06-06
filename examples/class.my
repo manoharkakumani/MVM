@@ -1,0 +1,11 @@
+class Mano:
+    k=1 # class var
+    fn __init__(self,a,b):
+        self.a=a
+        self.b=b
+    fn print_var(self):
+        print(self.a,self.b)
+        
+a = Mano(1,2)
+print(a)
+a.print_var()

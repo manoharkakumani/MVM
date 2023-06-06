@@ -1,0 +1,89 @@
+#ifndef __FUNCTION_H__
+#define __FUNCTION_H__
+
+#include "object.h"
+#include "string.h"
+#include "../chunk.h"
+#include "dict.h"
+
+#define AS_FUNCTION(object) ((MyMoFunction *)object)
+#define IS_FUNCTION(object) (object->type == OBJ_FUNCTION)
+
+#define AS_BUILTIN_FUNCTION(object) ((MyMoBuiltInFunction *)object)
+#define IS_BUILTIN_FUNCTION(object) (object->type == OBJ_BUILTIN_FUNCTION)
+
+#define AS_BUILDIN_METHOD(object) ((MyMoBuiltInFunction *)object)
+#define IS_BUILTIN_METHOD(object) (object->type == OBJ_BUILTIN_METHOD)
+
+#define AS_CLOUSER(object) ((MyMoClouser *)object)
+#define IS_CLOUSER(object) (object->type == OBJ_CLOUSER)
+
+#define AS_BOUND_METHOD(object) ((MyMoBoundMethod *)object)
+#define IS_BOUND_METHOD(object) (object->type == OBJ_BOUND_METHOD)
+
+typedef enum
+{
+  FN_INIT,
+  FN_METHOD,
+  FN_OPERATOR,
+  FN_GENERATOR,
+  FN_FUNCTION,
+  FN_ARROWFN,
+  FN_MODULE,
+  FN_COMPILED,
+  FN_SCRIPT
+} FunctionType;
+
+typedef struct MyMoFunction
+{
+  MyMoObject object;
+  FunctionType type;
+  int argc;
+  MyMoString *name;
+  MyMoString *argv[256];
+  MyMoDict *assiginedParameters;
+  MyMoDict *variables;
+  bool isargs;
+  Chunk *chunk;
+  struct MyMoFunction *outerFunction;
+} MyMoFunction;
+
+typedef struct MyMoClouser
+{
+  MyMoObject object;
+  MyMoFunction *function;
+  MyMoDict *variables;
+} MyMoClouser;
+
+typedef MyMoObject *(*BuiltInfunction)(MVM *vm, uint argCount, MyMoObject *args[]);
+
+typedef struct MyMoBuiltInFunction
+{
+  MyMoObject object;
+  MyMoString *name;
+  MyMoObject *self;
+  BuiltInfunction function;
+} MyMoBuiltInFunction;
+
+typedef struct MyMoBoundMethod
+{
+  MyMoObject object;
+  MyMoObject *self;
+  MyMoFunction *method;
+} MyMoBoundMethod;
+
+MyMoBuiltInFunction *newBuiltInFunction(MVM *vm, MyMoString *name, BuiltInfunction function, MyMoObjectType type);
+
+MyMoFunction *newFunction(MVM *vm);
+MyMoClouser *newClouser(MVM *vm, MyMoFunction *function);
+MyMoBoundMethod *newBoundMethod(MVM *vm, MyMoObject *self, MyMoFunction *method);
+
+void defineMethod(MVM *vm, MyMoObjectType type, const char *name, BuiltInfunction function);
+
+void printFunction(MyMoFunction *function);
+void printClouser(MyMoClouser *clouser);
+void printBuiltInFunction(MyMoBuiltInFunction *builtInFunction);
+void printBuiltInMethod(MyMoBuiltInFunction *builtInFunction);
+void printBoundMethod(MyMoBoundMethod *boundMethod);
+
+#endif

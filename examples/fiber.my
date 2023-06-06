@@ -1,0 +1,17 @@
+fn A:
+    print("running A")
+    k = yield()
+    print("Back to function A", k)
+fn Mano :
+    print("running Mano")
+    b =10
+    yield(b)
+    print("Back to function Mano")
+
+a = fiber(A)
+mano = fiber(Mano)
+a.run()
+p = mano.run()
+a.resume()
+mano.resume()
+
