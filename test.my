@@ -1,15 +1,10 @@
-class Animal():
-    fn __init__(self,name):
-        self.name = name
-    fn eat(self):
-        print(self.name,"can eat")
+fn hanoi(n, src, dest, aux):
+    if (n == 1):
+        print("Move disk 1 from rod " + src + " to rod " + dest + ".")
+        return
+    hanoi(n - 1, src, aux, dest)
+    print("Move disk " + str(n) + " from rod " + src + " to rod " + dest + ".")
+    hanoi(n-1, aux, dest, src)
 
-class Dog(Animal):
-    fn __init__(self,name):
-        self.name = name
-    fn bark(self):
-        print(self.name,"can bark")
-
-a= 'Tom' |> Dog()
-a.bark()
-a.eat()
+n = 4
+hanoi(n, "A", "C", "B")

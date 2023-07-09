@@ -204,7 +204,6 @@ Compiler *initCompiler(MVM *vm, Parser *parser, FunctionType type)
     compiler->flags.cl_fn = false;
     compiler->flags.dontSetVar = 0;
     compiler->flags.pithru = 0;
-    compiler->flags.ret = false;
     compiler->flags.argv = 0;
     compiler->flags.dict = 0;
     compiler->flags.list = 0;

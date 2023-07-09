@@ -2,10 +2,11 @@
 #include "vm.h"
 #include "stack.h"
 #include "operations.h"
-#include <math.h>
 #include "datatypes/datatypes.h"
 #include "utils.h"
 #include "debug.h"
+
+#include <math.h>
 
 
 // #ifdef __PRINT_CODE_EXEC__
@@ -299,8 +300,9 @@ int runMVM(MVM *vm)
 #define ReadShort() (frame->ip += 2, (u16)(frame->ip[-2] << 8) | frame->ip[-1])
 #define ReadConstant() (frame->function->chunk->constants.objects[ReadByte()])
 #define ReadObject() ReadConstant()
-// #define DISPATCH() goto *dispatchTable[ReadByte()]
-// /*
+
+#ifdef STACKTRACE
+
    #define DISPATCH()                                                                                   \
     do                                                                                                   \
     {                                                                                                    \
@@ -308,8 +310,13 @@ int runMVM(MVM *vm)
         disassembleInstruction(frame->function->chunk, (int)(frame->ip - frame->function->chunk->code)); \
         goto *dispatchTable[ReadByte()];                                                                 \
     } while (0);
-// */
-    // DISPATCH();
+
+#else
+
+    #define DISPATCH() goto *dispatchTable[ReadByte()]
+
+#endif
+
     for (;;)
     {
     OP_NOP:

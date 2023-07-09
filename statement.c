@@ -135,7 +135,6 @@ void returnStatement(Compiler *compiler)
         expression(compiler);
         emitByte(compiler, OP_FRET);
     }
-    compiler->flags.ret = true;
 }
 
 void deleteStatement(Compiler *compiler)
@@ -359,10 +358,7 @@ void simpleStatement(Compiler *compiler)
 
 MyMoFunction *endFunction(Compiler *compiler)
 {
-    if (!compiler->flags.ret)
-    {
-        emitReturn(compiler);
-    }
+    emitReturn(compiler);
     MyMoFunction *function = compiler->function;
 #ifdef DEBUG_PRINT_CODE
     if (!compiler->parser->hadError)

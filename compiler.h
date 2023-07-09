@@ -38,7 +38,6 @@ typedef struct CompilerFlags
 {
     bool cl_fn;
     u32 pithru;
-    bool ret;
     u32 dontSetVar;
     u32 argv;
     u32 dict;

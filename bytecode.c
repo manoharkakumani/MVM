@@ -71,9 +71,6 @@ void emitReturn(Compiler *compiler)
     case FN_MODULE:
         emitByte(compiler, OP_RET);
         break;
-        // case INIT:
-        //   emitByte(compiler,OP_FRET);
-        //   break;
     default:
         emitByte(compiler, OP_NIL);
         emitByte(compiler, OP_FRET);

@@ -288,7 +288,6 @@ void variable(Compiler *compiler, bool canAssign)
             {
                 expression(arrowCompiler);
                 emitByte(arrowCompiler, OP_FRET);
-                arrowCompiler->flags.ret = true;
                 compiler->flags.arrowfn--;
             }
             MyMoFunction *arrowFunction = endFunction(arrowCompiler);
@@ -376,7 +375,6 @@ void grouping(Compiler *compiler, bool canAssign)
         {
             expression(arrowCompiler);
             emitByte(arrowCompiler, OP_FRET);
-            arrowCompiler->flags.ret = true;
             compiler->flags.arrowfn--;
         }
         MyMoFunction *arrowFunction = endFunction(arrowCompiler);
