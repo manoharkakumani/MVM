@@ -33,6 +33,7 @@ MVM *initVM()
     vm->objects = NULL;
     vm->currentModule = NULL;
     vm->currentClass = NULL;
+    vm->objectClass = NULL;
     vm->classCall = 0;
     vm->fiber = newFiber(vm, NULL);
     initDict(&vm->globals);
@@ -166,7 +167,7 @@ bool caller(MVM *vm, MyMoObject *callee, u32 argc)
             runtimeError(vm, "TypeError : <Script '%s'> is not callable.", function->name->value);
             return false;
         }
-        else if (function->type == FN_GENERATOR)
+        else if (function->type == FN_GENERATOR || function->type == FN_GEN_METHOD)
         {
             runtimeError(vm, "TypeError : <generator '%s'> is not callable.", function->name->value);
             return false;
@@ -298,8 +299,8 @@ int runMVM(MVM *vm)
 #define ReadShort() (frame->ip += 2, (u16)(frame->ip[-2] << 8) | frame->ip[-1])
 #define ReadConstant() (frame->function->chunk->constants.objects[ReadByte()])
 #define ReadObject() ReadConstant()
-#define DISPATCH() goto *dispatchTable[ReadByte()]
-/*
+// #define DISPATCH() goto *dispatchTable[ReadByte()]
+// /*
    #define DISPATCH()                                                                                   \
     do                                                                                                   \
     {                                                                                                    \
@@ -307,8 +308,8 @@ int runMVM(MVM *vm)
         disassembleInstruction(frame->function->chunk, (int)(frame->ip - frame->function->chunk->code)); \
         goto *dispatchTable[ReadByte()];                                                                 \
     } while (0);
-*/
-    DISPATCH();
+// */
+    // DISPATCH();
     for (;;)
     {
     OP_NOP:
@@ -909,7 +910,8 @@ int runMVM(MVM *vm)
     OP_CJMP:
     {
         u16 offset = ReadShort();
-        if (!isEqual(pop(vm), peek(vm, 0)))
+        MyMoObject *lhs = pop(vm);
+        if (!isEqual(lhs, peek(vm, 0)))
         {
             frame->ip += offset;
         }
@@ -1031,6 +1033,7 @@ int runMVM(MVM *vm)
             klass->init = method;
         }
         setEntry(vm, klass->methods, name, method);
+        AS_FUNCTION(method)->klass = AS_OBJECT(klass);
         DISPATCH();
     }
     OP_FN:
@@ -1113,6 +1116,29 @@ int runMVM(MVM *vm)
         push(vm, AS_OBJECT(klass));
         DISPATCH();
     }
+    OP_SUPERARGS:{
+        int argc = INT_VAL(ReadConstant());
+        for (size_t i = 0; i < argc ; i++)
+        {
+            MyMoObject *superClass = pop(vm);
+            if(IS_CLASS(superClass) || IS_BUILTIN_CLASS(superClass)){
+                writeMyMoObjectArray(vm,&vm->currentClass->superClasses,superClass);
+                if(IS_CLASS(superClass)){
+                    copyDict(vm,AS_CLASS(superClass)->methods,vm->currentClass->methods);
+                    copyDict(vm,AS_CLASS(superClass)->fields,vm->currentClass->fields);
+                    copyDict(vm,AS_CLASS(superClass)->variables,vm->currentClass->variables);
+                    vm->currentClass->init = AS_CLASS(superClass)->init;
+                }
+                else{
+                    copyDict(vm,AS_BUILTIN_CLASS(superClass)->methods,vm->currentClass->methods);
+                }
+            }
+            else{
+                runtimeError(vm, "TypeError: only class can be inherated");
+            }
+        }        
+        DISPATCH();
+    }
     OP_ENDCLASS:
     {
         vm->currentClass = vm->currentClass->enclosing;
@@ -1143,7 +1169,7 @@ int runMVM(MVM *vm)
             runtimeError(vm, "TypeError: can't set attributes of built-in/extension type 'object'");
             return RUNTIME_ERROR;
         }
-        runtimeError(vm, "Only classes and instances have properties.");
+        runtimeError(vm, "TypeError: Only classes and instances have properties.");
         return RUNTIME_ERROR;
     }
     OP_AGETP:

@@ -512,7 +512,7 @@ void functionStatement(Compiler *compiler)
     compiler->flags.cl_fn = false;
     if (checkToken(compiler, LPAR) || oper_meth)
     {
-        consumeToken(compiler, LPAR, "expected '(' after function name");
+        consumeToken(compiler, LPAR, "expected '(' after operator method name");
         if (!checkToken(fncompiler, RPAR) || oper_meth)
         {
             if (oper_meth)
@@ -522,7 +522,7 @@ void functionStatement(Compiler *compiler)
                 if (argc)
                 {
                     if (!matchToken(fncompiler, COMMA))
-                        errorAtCurrent(fncompiler, "expected ',' after argument as operator method requires two arguments.");
+                        errorAtCurrent(fncompiler, "expected  argument as operator method requires upto two arguments.");
                     fnParameters(fncompiler);
                 }
             }
@@ -585,18 +585,20 @@ void classStatement(Compiler *compiler)
     {
     if (!checkToken(compiler, RPAR))
     {
+        compiler->flags.tuple = true;
         do
         {
             if (superClasses == 255)
             {
                 error(compiler, "cannot have more than 255 super classes.");
             }
-            if(!checkToken(compiler,NAME)){
-                
-            }
             expression(compiler);
             superClasses++;
         } while (matchToken(compiler, COMMA));
+        compiler->flags.tuple = false;
+    }
+    if(superClasses){
+      emitBytes(compiler,OP_SUPERARGS,makeConstant(compiler,NEW_INT(compiler->parser->vm,superClasses)));
     }
     consumeToken(compiler, RPAR, "expected ')' after arguments.");
     }

@@ -11,6 +11,7 @@ struct vm
 {
     MyMoFiber *fiber;
     MyMoClass *currentClass;
+    MyMoClass *objectClass;
     MyMoBuiltInClass *builtInClasses[OBJ_FUNCTION];
     MyMoDict builtins;
     MyMoDict modules;

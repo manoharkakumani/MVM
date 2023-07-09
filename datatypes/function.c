@@ -1,4 +1,5 @@
 #include "function.h"
+#include "nil.h"
 #include "../vm.h"
 
 MyMoBuiltInFunction *newBuiltInFunction(MVM *vm, MyMoString *name, BuiltInfunction function, MyMoObjectType type)
@@ -19,6 +20,7 @@ MyMoFunction *newFunction(MVM *vm)
     function->chunk = newChunk(vm);
     function->outerFunction = NULL;
     function->isargs = false;
+    function->klass = AS_OBJECT(vm->builtInClasses[OBJ_OBJECT]);
     return function;
 }
 
@@ -58,6 +60,7 @@ void printFunction(MyMoFunction *function)
     case FN_OPERATOR:
         printf("<operator %s at %p>", function->name->value, function);
         break;
+    case FN_GEN_METHOD:
     case FN_GENERATOR:
         printf("<generator %s at %p>", function->name->value, function);
         break;

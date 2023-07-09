@@ -632,7 +632,7 @@ void yeild(Compiler *compiler, bool canAssign)
     if (compiler->flags.compileType == COMPILE_FUNCTION)
     {
         emitBytes(compiler, OP_GETV, identifierConstant(compiler, &compiler->parser->previous));
-        compiler->function->type = FN_GENERATOR;
+        compiler->function->type = (compiler->function->type == FN_METHOD ? FN_GEN_METHOD : FN_GENERATOR);
     }
     else
     {

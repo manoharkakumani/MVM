@@ -152,6 +152,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_FRET", offset);
     case OP_CLASS:
         return constantInstruction("OP_CLASS", chunk, offset);
+    case OP_SUPERARGS:
+        return simpleInstruction("OP_SUPERARGS", offset);
     case OP_ENDCLASS:
         return simpleInstruction("OP_ENDCLASS", offset);
     case OP_USE:

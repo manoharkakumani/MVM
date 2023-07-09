@@ -24,10 +24,11 @@
 typedef enum
 {
   FN_INIT,
-  FN_METHOD,
   FN_OPERATOR,
-  FN_GENERATOR,
+  FN_GEN_METHOD,
+  FN_METHOD,
   FN_FUNCTION,
+  FN_GENERATOR,
   FN_ARROWFN,
   FN_MODULE,
   FN_COMPILED,
@@ -46,6 +47,7 @@ typedef struct MyMoFunction
   bool isargs;
   Chunk *chunk;
   struct MyMoFunction *outerFunction;
+  MyMoObject *klass;
 } MyMoFunction;
 
 typedef struct MyMoClouser
@@ -55,7 +57,7 @@ typedef struct MyMoClouser
   MyMoDict *variables;
 } MyMoClouser;
 
-typedef MyMoObject *(*BuiltInfunction)(MVM *vm, uint argCount, MyMoObject *args[]);
+typedef MyMoObject *(*BuiltInfunction)(MVM *vm, uint argc, MyMoObject *argv[]);
 
 typedef struct MyMoBuiltInFunction
 {

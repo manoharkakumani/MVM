@@ -9,7 +9,7 @@
 
 typedef struct MyMoTuple
 {
-    MyMoObject obj;
+    MyMoObject object;
     MyMoObjectArray values;
 } MyMoTuple;
 

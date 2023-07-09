@@ -12,6 +12,6 @@ a = fiber(A)
 mano = fiber(Mano)
 a.run()
 p = mano.run()
-a.resume()
+a.resume(10)
 mano.resume()
 

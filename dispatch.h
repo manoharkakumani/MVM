@@ -48,6 +48,7 @@ void *dispatchTable[] = {
     &&OP_RET,
     &&OP_FRET,
     &&OP_CLASS,
+    &&OP_SUPERARGS,
     &&OP_ENDCLASS,
     &&OP_SETP,
     &&OP_AGETP,
