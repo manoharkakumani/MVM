@@ -94,7 +94,6 @@ typedef enum
     PASS,
     RAISE,
     RET,
-    SUPER,
     TRY,
     TRUE,
     USE,
@@ -120,7 +119,7 @@ typedef struct keywords
     int len;
 } Keywords;
 
-extern Keywords keywords[31];
+extern Keywords keywords[30];
 
 void printToken(Token *Token);
 

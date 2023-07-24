@@ -132,7 +132,6 @@ ParseRule rules[] = {
     [OR] = {NULL, or_, PREC_OR},
     [NIL] = {literal, NULL, PREC_NONE},
     [RET] = {NULL, NULL, PREC_NONE},
-    [SUPER] = {super, NULL, PREC_NONE},
     [TRUE] = {literal, NULL, PREC_NONE},
     [USE] = {NULL, NULL, PREC_NONE},
     [FROM] = {NULL, NULL, PREC_NONE},

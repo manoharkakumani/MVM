@@ -15,7 +15,6 @@ MyMoFiber *newFiber(MVM *vm, MyMoFunction *function)
     initMyMoObjectArray(vm, &fiber->stack);
     CallFrame *frame = New(CallFrame, 1);
     frame->function = function;
-    frame->parent = NULL;
     initDict(&frame->locals);
     fiber->callFrames[0] = frame;
     if (function)

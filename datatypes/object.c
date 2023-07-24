@@ -265,30 +265,46 @@ void defineObjectClass(MVM *vm)
 
 MyMoObject *getMethod(MVM *vm, MyMoObject *a, const char *name)
 {
-    if (IS_INSTANCE(a))
+    switch (a->type)
     {
-        MyMoObject *methodName = NEW_STRING(vm, name, strlen(name));
-        MyMoObject *method = getEntry(AS_INSTANCE(a)->fields, methodName);
-        if (method)
+        case OBJ_INSTANCE:
         {
-            return method;
+            MyMoObject *methodName = NEW_STRING(vm, name, strlen(name));
+            MyMoObject *method = getEntry(AS_INSTANCE(a)->fields, methodName);
+            if (method)
+            {
+                return method;
+            }
+            method = getEntry(AS_INSTANCE(a)->klass->methods, methodName);
+            if (method)
+            {
+                return method;
+            }
+            return NEW_EMPTY;
         }
-        method = getEntry(AS_INSTANCE(a)->klass->methods, methodName);
-        if (method)
+        case OBJ_CLASS:
         {
-            return method;
+            MyMoObject *methodName = NEW_STRING(vm, name, strlen(name));
+            MyMoObject *method = getEntry(AS_CLASS(a)->methods, methodName);
+            if (method)
+            {
+                return method;
+            }
+            return NEW_EMPTY;
         }
-        return NEW_EMPTY;
+        case OBJ_LIST:
+        case OBJ_TUPLE:
+        case OBJ_DICT:
+        {
+            MyMoObject *methodName = NEW_STRING(vm, name, strlen(name));
+            MyMoObject *method = getEntry(vm->builtInClasses[a->type]->methods, methodName);
+            if (method)
+            {
+                return method;
+            }
+            return NEW_EMPTY;
+        }
+        default:
+            return NEW_EMPTY;
     }
-    else if (IS_CLASS(a))
-    {
-        MyMoObject *methodName = NEW_STRING(vm, name, strlen(name));
-        MyMoObject *method = getEntry(AS_CLASS(a)->methods, methodName);
-        if (method)
-        {
-            return method;
-        }
-        return NEW_EMPTY;
-    }
-    return NEW_EMPTY;
 }

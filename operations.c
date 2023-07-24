@@ -180,11 +180,11 @@ MyMoObject *division(MVM *vm, MyMoObject *a, MyMoObject *b)
     if (IS_INT(a) && IS_INT(b))
     {
         long a_val = INT_VAL(a);
-        long b_val = INT_VAL(b);
+        double b_val = INT_VAL(b);
         double result = a_val / b_val;
-        if (result == (long)result)
+        if (result == (int) result)
         {
-            return NEW_INT(vm, (int)result);
+            return NEW_INT(vm, (long)result);
         }
         else
         {

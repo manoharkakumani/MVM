@@ -21,6 +21,9 @@
 #define AS_BOUND_METHOD(object) ((MyMoBoundMethod *)object)
 #define IS_BOUND_METHOD(object) (object->type == OBJ_BOUND_METHOD)
 
+
+typedef struct CallFrame CallFrame;
+
 typedef enum
 {
   FN_INIT,
@@ -46,9 +49,15 @@ typedef struct MyMoFunction
   MyMoDict *variables;
   bool isargs;
   Chunk *chunk;
-  struct MyMoFunction *outerFunction;
+  struct CallFrame *frame;
   MyMoObject *klass;
 } MyMoFunction;
+
+struct CallFrame {
+    MyMoFunction *function;
+    MyMoDict locals;
+    u8 *ip;
+};
 
 typedef struct MyMoClouser
 {

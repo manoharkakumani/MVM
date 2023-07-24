@@ -15,6 +15,8 @@
 
 #define UNUSED(_X_) (void)_X_
 
+#define MAX_PATH 4096
+
 typedef struct vm MVM;
 
 typedef uint8_t u8;

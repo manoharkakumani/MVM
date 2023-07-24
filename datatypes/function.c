@@ -18,7 +18,7 @@ MyMoFunction *newFunction(MVM *vm)
     function->variables = newDict(vm);
     function->assiginedParameters = newDict(vm);
     function->chunk = newChunk(vm);
-    function->outerFunction = NULL;
+    function->frame = NULL;
     function->isargs = false;
     function->klass = AS_OBJECT(vm->builtInClasses[OBJ_OBJECT]);
     return function;
@@ -74,7 +74,10 @@ void printFunction(MyMoFunction *function)
         printf("<Script %s>", function->name->value);
         break;
     case FN_SCRIPT:
-        printf("<Script>");
+        printf("<Script at %p>", function);
+        break;
+    case FN_MODULE:
+        printf("<Module at %p>", function);
         break;
     default:
         printf("<unknown function at %p>", function);

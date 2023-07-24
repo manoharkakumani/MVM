@@ -110,7 +110,7 @@ MyMoObject *lenListMethod(MVM *vm, uint argc, MyMoObject *args[])
 {
     if (argc)
     {
-        runtimeError(vm, "__len__() takes no arguments (%d given)", argc);
+        runtimeError(vm, "TypeError: __len__() takes no arguments (%d given)", argc);
         return NEW_EMPTY;
     }
     MyMoBuiltInFunction *function = AS_BUILTIN_FUNCTION(peek(vm, 0));
@@ -126,7 +126,7 @@ MyMoObject *appendListMethod(MVM *vm, uint argc, MyMoObject *args[])
 {
     if (argc != 1)
     {
-        runtimeError(vm, "append() takes exactly one argument (%d given)", argc);
+        runtimeError(vm, "TypeError: append() takes exactly one argument (%d given)", argc);
         return NEW_EMPTY;
     }
     MyMoBuiltInFunction *function = AS_BUILTIN_FUNCTION(peek(vm, 1));
@@ -144,7 +144,7 @@ MyMoObject *copyListMethod(MVM *vm, uint argc, MyMoObject *args[])
 {
     if (argc)
     {
-        runtimeError(vm, "copy() takes zero argument (%d given)", argc);
+        runtimeError(vm, "TypeError: copy() takes zero argument (%d given)", argc);
         return NEW_EMPTY;
     }
     MyMoList *copyList = newList(vm);
@@ -162,11 +162,33 @@ MyMoObject *copyListMethod(MVM *vm, uint argc, MyMoObject *args[])
     return AS_OBJECT(copyList);
 }
 
+MyMoObject *addListMethod(MVM *vm, uint argc, MyMoObject *args[])
+{
+    MyMoList *resultList = newList(vm);
+    if (!(IS_LIST(peek(vm,0))) || !(IS_LIST(peek(vm,1))))
+    {
+        runtimeError(vm, "TypeError: can't perform + between  %s and %s", getType(peek(vm,1)), getType(peek(vm,0)));
+        return NEW_EMPTY;
+    }
+    MyMoList *bList = AS_LIST(pop(vm));
+    MyMoList *aList = AS_LIST(pop(vm));
+    
+    for (int i = 0; i < aList->values.count; i++)
+    {
+        writeMyMoObjectArray(vm, &resultList->values, aList->values.objects[i]);
+    }
+    for (int i = 0; i < bList->values.count; i++)
+    {
+        writeMyMoObjectArray(vm, &resultList->values, bList->values.objects[i]);
+    }
+    return AS_OBJECT(resultList);
+}
+
 void defineListMethods(MVM *vm)
 {
     defineMethod(vm, OBJ_LIST, "__new__", newListMethod);
     defineMethod(vm, OBJ_LIST, "__len__", lenListMethod);
-    // defineMethod(vm, OBJ_LIST, "+", addListMethod);
+    defineMethod(vm, OBJ_LIST, "+", addListMethod);
     // defineMethod(vm, OBJ_LIST, "remove", removeListMethod);
     defineMethod(vm, OBJ_LIST, "append", appendListMethod);
     defineMethod(vm, OBJ_LIST, "copy", copyListMethod);

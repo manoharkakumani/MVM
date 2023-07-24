@@ -7,6 +7,16 @@
 #include "cache.h"
 #include <sys/stat.h>
 
+//platform dependent
+#ifdef _WIN32
+#define IS_DELIMITER(s) ((s == '/') || (s == '\\'))
+#include <direct.h>
+typedef struct _stat  Stat;
+#else
+#define IS_DELIMITER(s) (s == '/')
+typedef struct stat  Stat;
+#endif
+
 MyMoObject *clockfn(MVM *vm, uint argc, MyMoObject *argv[])
 {
     UNUSED(vm);
@@ -18,6 +28,8 @@ MyMoObject *clockfn(MVM *vm, uint argc, MyMoObject *argv[])
     }
     return NEW_DOUBLE(vm, (double)clock() / CLOCKS_PER_SEC);
 }
+
+
 MyMoObject *inputfn(MVM *vm, uint argc, MyMoObject *argv[])
 {
     if (argc > 1)
@@ -163,7 +175,7 @@ MyMoObject *yieldfn(MVM *vm, uint argc, MyMoObject *argv[])
         return NEW_EMPTY;
     }
     MyMoObject *obj = NEW_NIL;
-    if (argv)
+    if (argc)
     {
        obj = pop(vm);
     }
@@ -171,6 +183,27 @@ MyMoObject *yieldfn(MVM *vm, uint argc, MyMoObject *argv[])
     vm->fiber = vm->fiber->parent;
     return obj;
 }
+
+// MyMoObject *awaitfn(MVM *vm, uint argc, MyMoObject *argv[])
+// {
+//     if (argc > 1)
+//     {
+//         runtimeError(vm, "TypeError: await() takes 0 or 1 argument (%d given).", argc);
+//         return NEW_EMPTY;
+//     }
+//     if(!vm->fiber->parent){
+//         runtimeError(vm, "RuntimeError: await function needs to be called from fiber");
+//         return NEW_EMPTY;
+//     }
+//     MyMoObject *obj = NEW_NIL;
+//     if (argc)
+//     {
+//        obj = pop(vm);
+//     }
+//     vm->fiber->state = FIBER_YIELD;
+//     vm->fiber = vm->fiber->parent;
+//     return obj;
+// }
 
 MyMoObject *superfn(MVM *vm, uint argc, MyMoObject *argv[])
 {
@@ -254,6 +287,7 @@ void defineBuiltInFunctions(MVM *vm)
     defineBuiltInFunction(vm, "exec", execfn);
     defineBuiltInFunction(vm, "len", lenfn);
     defineBuiltInFunction(vm, "yield", yieldfn);
+    // defineBuiltInFunction(vm,"await",awaitfn);
     defineBuiltInFunction(vm,"super",superfn);
 }
 
@@ -298,12 +332,12 @@ MyMoFunction *runFile(MVM *vm, char *path)
 
 char *pathResolver(MVM *vm, char *_path)
 {
-#define DELIMITER '/'
+    #define DELIMITER '/'
     size_t len = strlen(_path);
     char *path = New(char, len + 1);
     if (vm->currentModule != NULL)
     {
-        if (_path[0] == DELIMITER)
+        if (IS_DELIMITER(_path[0]))
         {
             strcpy(path, _path);
         }
@@ -323,12 +357,12 @@ char *pathResolver(MVM *vm, char *_path)
         current:
             if (_path[c] == '.')
             {
-                if (_path[c + 1] == DELIMITER)
+                if (IS_DELIMITER(_path[c + 1]))
                 {
                     c += 2;
                     goto current;
                 }
-                else if (_path[c + 1] == '.' && _path[c + 2] == DELIMITER)
+                else if (_path[c + 1] == '.' && IS_DELIMITER(_path[c + 2]))
                 {
                     c += 3;
                     goto parent;
@@ -348,8 +382,13 @@ char *pathResolver(MVM *vm, char *_path)
     }
     else
     {
-        char actualpath[4096];
-        char *__path = realpath(_path, actualpath);
+        char actualpath[MAX_PATH];
+        char *__path;
+        #ifdef _WIN32
+            __path =  _fullpath(actualpath, _path, MAX_PATH); 
+        #else
+            __path = realpath(_path, actualpath);
+        #endif
         if (__path)
         {
             size_t _len = strlen(__path);
@@ -368,8 +407,8 @@ char *pathResolver(MVM *vm, char *_path)
     memcpy(cachePath, path, pathLen);
     cachePath[pathLen] = '\0';
     strcat(cachePath, "c");
-    struct stat file;
-    struct stat cachefile;
+    Stat file;
+    Stat cachefile;
     if (stat(path, &file) == 0 && stat(cachePath, &cachefile) == 0)
     {
         if (cachefile.st_mtime < file.st_mtime)
@@ -385,5 +424,5 @@ char *pathResolver(MVM *vm, char *_path)
         free(cachePath);
         return path;
     }
-#undef DELIMITER
+    #undef DELIMITER
 }

@@ -185,7 +185,12 @@ int main(int argc, const char *argv[])
     else if (argc == 2)
     {
         char actualpath[10000];
-        const char *path = realpath(argv[1], actualpath);
+        char *path;
+        #ifdef _WIN32
+            path =  _fullpath(actualpath, argv[1], MAX_PATH); 
+        #else
+            path = realpath(argv[1], actualpath);
+        #endif
         if (path == NULL)
         {
             fprintf(stderr, "Could not find script \"%s\".\n", argv[1]);

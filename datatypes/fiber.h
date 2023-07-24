@@ -16,14 +16,6 @@
 
 #define NEW_FIBER(vm, value) AS_OBJECT(newFiber(vm, value))
 
-typedef struct CallFrame
-{
-    MyMoFunction *function;
-    MyMoDict locals;
-    u8 *ip;
-    struct CallFrame *parent;
-} CallFrame;
-
 typedef enum
 {
     FIBER_READY,

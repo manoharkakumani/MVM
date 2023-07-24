@@ -299,17 +299,6 @@ void variable(Compiler *compiler, bool canAssign)
     }
 }
 
-void super(Compiler *compiler, bool canAssign)
-{
-    UNUSED(canAssign);
-    // if (compiler -> classCompiler == NULL) {
-    //   error(compiler, "Cannot use 'super' outside of a class.");
-    //   return;
-    // }
-    u32 name = identifierConstant(compiler, &compiler->parser->previous);
-    emitBytes(compiler, OP_GETV, name);
-}
-
 void expression(Compiler *compiler)
 {
     parsePrecedence(compiler, PREC_ASSIGNMENT);

@@ -8,7 +8,7 @@
 
 #include <math.h>
 
-
+#define STACKTRACE
 // #ifdef __PRINT_CODE_EXEC__
 
   void debugChunk(MyMoFunction *function)
@@ -122,16 +122,7 @@ bool callFunction(MVM *vm, MyMoFunction *function, int argc)
         CallFrame *frame = New(CallFrame, 1);
         frame->function = function;
         frame->ip = function->chunk->code;
-        frame->parent = NULL;
         initDict(&frame->locals);
-        if (vm->fiber->frameCount > 0 && function->outerFunction)
-        {
-            CallFrame *currentFrame = vm->fiber->callFrames[vm->fiber->frameCount];
-            if (function->outerFunction && isEqual(AS_OBJECT(function->outerFunction), AS_OBJECT(currentFrame->function)))
-            {
-                frame->parent = currentFrame;
-            }
-        }
         vm->fiber->callFrames[++vm->fiber->frameCount] = frame;
         if (argc && !function->isargs)
         {
@@ -801,7 +792,7 @@ int runMVM(MVM *vm)
             runtimeError(vm, "Operands must be numbers.");
             return RUNTIME_ERROR;
         }
-        double result = powf(NUMBER_VAL(a), NUMBER_VAL(b));
+        double result = pow(NUMBER_VAL(a), NUMBER_VAL(b));
         // if (isInteger(result))
         // {
         //     push(vm, NEW_INT(vm, (long)result));
@@ -971,9 +962,11 @@ int runMVM(MVM *vm)
                 push(vm, value);
                 DISPATCH();
             }
-            CallFrame *parent = frame->parent;
+            CallFrame *parent = frame->function->frame;
             while (parent)
             {
+                printFunction(parent->function);
+                printf("-> \n");
                 value = getEntry(&parent->locals, variable);
                 if (value)
                 {
@@ -981,7 +974,7 @@ int runMVM(MVM *vm)
                     setEntry(vm, &frame->locals, variable, value);
                     DISPATCH();
                 }
-                parent = parent->parent;
+                parent = parent->function->frame;
             }
         }
         value = getEntry(&vm->globals, variable);
@@ -1046,7 +1039,7 @@ int runMVM(MVM *vm)
     OP_FN:
     {
         MyMoObject *function = ReadObject();
-        AS_FUNCTION(function)->outerFunction = frame->function;
+        AS_FUNCTION(function)->frame = frame;
         push(vm, function);
         DISPATCH();
     }
@@ -1055,7 +1048,6 @@ int runMVM(MVM *vm)
         u8 argCount = ReadByte();
         if (!caller(vm, peek(vm, argCount), argCount))
             return RUNTIME_ERROR;
-
         frame = vm->fiber->callFrames[vm->fiber->frameCount];
         DISPATCH();
     }

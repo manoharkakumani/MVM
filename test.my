@@ -1,10 +1,8 @@
-fn hanoi(n, src, dest, aux):
-    if (n == 1):
-        print("Move disk 1 from rod " + src + " to rod " + dest + ".")
-        return
-    hanoi(n - 1, src, aux, dest)
-    print("Move disk " + str(n) + " from rod " + src + " to rod " + dest + ".")
-    hanoi(n-1, aux, dest, src)
-
-n = 4
-hanoi(n, "A", "C", "B")
+a = 1
+case a:
+    False:
+        print("1!")
+    10:
+        print("10!")
+    $:
+        print("$")

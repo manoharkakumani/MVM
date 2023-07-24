@@ -153,59 +153,59 @@ void chunkDeserialize(MVM *vm, Chunk *chunk, FILE *stream)
     return;
 }
 
-void entrySerialize(Entry *entry, FILE *stream)
-{
-    int keynull = 0;
-    if (entry->key == NULL)
-    {
-        keynull = 1;
-        fwrite(&keynull, sizeof(keynull), 1, stream);
-        return;
-    }
-    fwrite(&keynull, sizeof(keynull), 1, stream);
-    objectSerialize(entry->key, stream);
-    objectSerialize(entry->value, stream);
-}
+// void entrySerialize(Entry *entry, FILE *stream)
+// {
+//     int keynull = 0;
+//     if (entry->key == NULL)
+//     {
+//         keynull = 1;
+//         fwrite(&keynull, sizeof(keynull), 1, stream);
+//         return;
+//     }
+//     fwrite(&keynull, sizeof(keynull), 1, stream);
+//     objectSerialize(entry->key, stream);
+//     objectSerialize(entry->value, stream);
+// }
 
-void entryDeserialize(MVM *vm, Entry *entry, FILE *stream)
-{
-    int keynull;
-    fread(&keynull, sizeof(keynull), 1, stream);
-    if (keynull)
-    {
-        entry->key = NULL;
-        entry->value = NEW_NIL;
-        return;
-    }
-    entry->key = objectDeserialize(vm, stream);
-    entry->value = objectDeserialize(vm, stream);
-}
+// void entryDeserialize(MVM *vm, Entry *entry, FILE *stream)
+// {
+//     int keynull;
+//     fread(&keynull, sizeof(keynull), 1, stream);
+//     if (keynull)
+//     {
+//         entry->key = NULL;
+//         entry->value = NEW_NIL;
+//         return;
+//     }
+//     entry->key = objectDeserialize(vm, stream);
+//     entry->value = objectDeserialize(vm, stream);
+// }
 
-void DictSerialize(MyMoDict *dict, FILE *stream)
-{
-    fwrite(&dict->capacity, sizeof(dict->capacity), 1, stream);
-    fwrite(&dict->count, sizeof(dict->count), 1, stream);
-    for (int i = 0; i < dict->capacity; i++)
-    {
-        entrySerialize(&dict->entries[i], stream);
-    }
-}
+// void DictSerialize(MyMoDict *dict, FILE *stream)
+// {
+//     fwrite(&dict->capacity, sizeof(dict->capacity), 1, stream);
+//     fwrite(&dict->count, sizeof(dict->count), 1, stream);
+//     for (int i = 0; i < dict->capacity; i++)
+//     {
+//         entrySerialize(&dict->entries[i], stream);
+//     }
+// }
 
-void DictDeserialize(MVM *vm, MyMoDict *dict, FILE *stream)
-{
-    fread(&dict->capacity, sizeof(dict->capacity), 1, stream);
-    fread(&dict->count, sizeof(dict->count), 1, stream);
-    if (dict->capacity < 0)
-    {
-        return;
-    }
-    dict->entries = New(Entry, dict->capacity);
-    for (int i = 0; i < dict->count; i++)
-    {
-        entryDeserialize(vm, &dict->entries[i], stream);
-    }
-    return;
-}
+// void DictDeserialize(MVM *vm, MyMoDict *dict, FILE *stream)
+// {
+//     fread(&dict->capacity, sizeof(dict->capacity), 1, stream);
+//     fread(&dict->count, sizeof(dict->count), 1, stream);
+//     if (dict->capacity < 0)
+//     {
+//         return;
+//     }
+//     dict->entries = New(Entry, dict->capacity);
+//     for (int i = 0; i < dict->count; i++)
+//     {
+//         entryDeserialize(vm, &dict->entries[i], stream);
+//     }
+//     return;
+// }
 
 void functionSerialize(MyMoFunction *function, FILE *stream)
 {
@@ -216,8 +216,8 @@ void functionSerialize(MyMoFunction *function, FILE *stream)
     {
         stringSerialize(function->argv[i], stream);
     }
-    DictSerialize(function->assiginedParameters, stream);
-    DictSerialize(function->variables, stream);
+    // DictSerialize(function->assiginedParameters, stream);
+    // DictSerialize(function->variables, stream);
     chunkSerialize(function->chunk, stream);
 }
 
@@ -231,8 +231,8 @@ MyMoFunction *functionDeserialize(MVM *vm, FILE *stream)
     {
         function->argv[i] = (MyMoString *)stringDeserialize(vm, stream);
     }
-    DictDeserialize(vm, function->assiginedParameters, stream);
-    DictDeserialize(vm, function->variables, stream);
+    // DictDeserialize(vm, function->assiginedParameters, stream);
+    // DictDeserialize(vm, function->variables, stream);
     chunkDeserialize(vm, function->chunk, stream);
     return function;
 }
