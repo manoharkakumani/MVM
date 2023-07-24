@@ -8,8 +8,10 @@
 
 #include <math.h>
 
-#define STACKTRACE
-// #ifdef __PRINT_CODE_EXEC__
+// #define STACK_TRACE
+// #define PRINTCODEEXEC
+
+#ifdef PRINTCODEEXEC
 
   void debugChunk(MyMoFunction *function)
   {
@@ -26,7 +28,7 @@
     printChunk(function->chunk);    
   }
     
-// #endif
+#endif
 
 MVM *initVM()
 {
@@ -292,7 +294,7 @@ int runMVM(MVM *vm)
 #define ReadConstant() (frame->function->chunk->constants.objects[ReadByte()])
 #define ReadObject() ReadConstant()
 
-#ifdef STACKTRACE
+#ifdef STACK_TRACE
 
    #define DISPATCH()                                                                                   \
     do                                                                                                   \
@@ -965,8 +967,6 @@ int runMVM(MVM *vm)
             CallFrame *parent = frame->function->frame;
             while (parent)
             {
-                printFunction(parent->function);
-                printf("-> \n");
                 value = getEntry(&parent->locals, variable);
                 if (value)
                 {
@@ -1425,7 +1425,10 @@ I_Result interpreter(MVM *vm, MyMoFunction *main_)
         return COMPILE_ERROR;
     vm->fiber->callFrames[0]->function = main_;
     vm->fiber->callFrames[0]->ip = main_->chunk->code;
-    // debugChunk(main_);
+
+    #ifdef PRINTCODEEXEC
+        debugChunk(main_);
+    #endif
     // set __name__ to __main__
     MyMoObject *name = AS_OBJECT(newString(vm, "__name__", 8));
     MyMoObject *main = AS_OBJECT(newString(vm, "__main__", 8));
