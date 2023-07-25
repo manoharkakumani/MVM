@@ -8,6 +8,9 @@ fib = n => n < 2 ? n : fib(n-1) + fib(n-2)
 fib3 = n => 
     return n < 2 ? n : fib(n-1) + fib(n-2)
 
-print(fib1(10),fib(3),fib3(3))
+
+if (__name__ == "__main__") : 
+    print(fib1(10),fib(3),fib3(3))
+
 
 

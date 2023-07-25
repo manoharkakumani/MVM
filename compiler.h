@@ -43,7 +43,6 @@ typedef struct CompilerFlags
     u32 dict;
     u32 list;
     u32 tuple;
-    u32 arrowfn;
     CompileType compileType;
 } CompilerFlags;
 
@@ -90,6 +89,7 @@ void dot(Compiler *compiler, bool canAssign);
 
 //=================TOKEN HANDLING===================
 void advanceToken(Compiler *compiler);
+void retreatNewLine(Compiler *compiler);
 void consumeToken(Compiler *compiler, TokenType type, const char *message);
 bool checkToken(Compiler *compiler, TokenType type);
 size_t getIndent(Compiler *compiler);

@@ -272,7 +272,6 @@ void variable(Compiler *compiler, bool canAssign)
     {
         if (compiler->parser->previous.type == NAME && checkToken(compiler, ARROW))
         {
-            compiler->flags.arrowfn++;
             Compiler *arrowCompiler = initCompiler(compiler->parser->vm, compiler->parser, FN_ARROWFN);
             arrowCompiler->function->name = newString(compiler->parser->vm, "arrowfn", 7);
             arrowCompiler->function->argc = 1;
@@ -283,12 +282,12 @@ void variable(Compiler *compiler, bool canAssign)
             if (matchToken(arrowCompiler, NEWLINE))
             {
                 block(arrowCompiler, indent);
+                retreatNewLine(arrowCompiler);
             }
             else
             {
                 expression(arrowCompiler);
                 emitByte(arrowCompiler, OP_FRET);
-                compiler->flags.arrowfn--;
             }
             MyMoFunction *arrowFunction = endFunction(arrowCompiler);
             emitBytes(compiler, OP_FN, makeConstant(compiler, AS_OBJECT(arrowFunction)));
@@ -329,7 +328,6 @@ void grouping(Compiler *compiler, bool canAssign)
     UNUSED(canAssign);
     if (checkArrow(compiler))
     {
-        compiler->flags.arrowfn++;
         Compiler *arrowCompiler = initCompiler(compiler->parser->vm, compiler->parser, FN_ARROWFN);
         arrowCompiler->function->name = newString(compiler->parser->vm, "arrowfn", 7);
         if (!checkToken(compiler, RPAR))
@@ -359,12 +357,12 @@ void grouping(Compiler *compiler, bool canAssign)
         if (matchToken(arrowCompiler, NEWLINE))
         {
             block(arrowCompiler, indent);
+            retreatNewLine(arrowCompiler);
         }
         else
         {
             expression(arrowCompiler);
             emitByte(arrowCompiler, OP_FRET);
-            compiler->flags.arrowfn--;
         }
         MyMoFunction *arrowFunction = endFunction(arrowCompiler);
         emitBytes(compiler, OP_FN, makeConstant(compiler, AS_OBJECT(arrowFunction)));

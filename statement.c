@@ -344,15 +344,7 @@ void simpleStatement(Compiler *compiler)
     }
     if (compiler->parser->current.type != END)
     {
-        if (compiler->flags.arrowfn)
-        {
-            compiler->flags.arrowfn--;
-        }
-        else
-        {
-            consumeToken(compiler, NEWLINE, "expect 'newline' after expression.");
-        }
-        skipNewLines(compiler);
+        consumeToken(compiler, NEWLINE, "expect 'newline' after expression.");
     }
 }
 
@@ -774,7 +766,9 @@ void statement(Compiler *compiler)
         moduleStatement(compiler);
     }
     else
+    {
         simpleStatement(compiler);
+    }
 }
 
 void statements(Compiler *compiler)

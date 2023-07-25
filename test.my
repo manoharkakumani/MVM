@@ -1,8 +1,7 @@
-a = 1
-case a:
-    False:
-        print("1!")
-    10:
-        print("10!")
-    $:
-        print("$")
+
+fib3 = m => 
+    return n =>
+        return m =>
+            1        
+
+print(fib3(1))

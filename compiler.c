@@ -21,6 +21,14 @@ void advanceToken(Compiler *compiler)
         errorAtCurrent(compiler, compiler->parser->current.token);
     }
 }
+
+void retreatNewLine(Compiler *compiler)
+{
+    compiler->parser->lexer->srcLen -= compiler->parser->current.length;
+    compiler->parser->lexer->currentChar = compiler->parser->lexer->src[compiler->parser->lexer->srcLen];
+    compiler->parser->current = compiler->parser->previous;
+}
+
 void consumeToken(Compiler *compiler, TokenType type, const char *message)
 {
     if (compiler->parser->current.type == type)
@@ -207,7 +215,6 @@ Compiler *initCompiler(MVM *vm, Parser *parser, FunctionType type)
     compiler->flags.dict = 0;
     compiler->flags.list = 0;
     compiler->flags.tuple = 0;
-    compiler->flags.arrowfn = 0;
     MyMoFunction *function = newFunction(vm);
     function->type = type;
     if (type != FN_SCRIPT && type != FN_ARROWFN && type != FN_COMPILED)
