@@ -126,6 +126,9 @@ void printObject(MyMoObject *object)
     case OBJ_CODE:
         printCode(AS_CODE(object));
         break;
+    case OBJ_ITER:
+        printIter(AS_ITER(object));
+        break;
     default:
         printf("Unknown type %d", object->type);
         printf("%p", object);
@@ -173,6 +176,10 @@ char *getType(MyMoObject *object)
         return "<object 'instance'>";
     case OBJ_MODULE:
         return "<object 'module'>";
+    case OBJ_CODE:
+        return "<object 'code'>";
+    case OBJ_ITER:
+        return "<object 'iter'>";
     default:
         return "<object 'unknown'>";
     }

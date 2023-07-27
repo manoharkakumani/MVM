@@ -1,7 +1,2 @@
-
-fib3 = m => 
-    return n =>
-        return m =>
-            1        
-
-print(fib3(1))
+a = (1,2)
+for i in a: print(i)

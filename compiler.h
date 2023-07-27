@@ -4,6 +4,7 @@
 #include "lexer.h"
 #include "chunk.h"
 #include "datatypes/function.h"
+#include "debug.h"
 
 typedef struct
 {

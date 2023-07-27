@@ -30,7 +30,8 @@ typedef enum
     OBJ_BUILTIN_CLASS,
     OBJ_INSTANCE,
     OBJ_MODULE,
-    OBJ_CODE
+    OBJ_CODE,
+    OBJ_ITER
 } MyMoObjectType;
 
 typedef struct MyMoObject

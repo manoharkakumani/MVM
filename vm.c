@@ -8,27 +8,8 @@
 
 #include <math.h>
 
-// #define STACK_TRACE
-// #define PRINTCODEEXEC
-
-#ifdef PRINTCODEEXEC
-
-  void debugChunk(MyMoFunction *function)
-  {
-    MyMoObjectArray constants = function->chunk->constants;
-    for(int i=0; i<constants.count; i++)
-    {
-        if (!(IS_FUNCTION(constants.objects[i])))
-        {
-            continue;
-        }
-        debugChunk(AS_FUNCTION(constants.objects[i]));
-    }
-    printf("======== %s =========\n",function->name->value);
-    printChunk(function->chunk);    
-  }
-    
-#endif
+// #define DEBUG_STACK_TRACE
+// #define DEBUG_PRINT_CODE
 
 MVM *initVM()
 {
@@ -294,7 +275,7 @@ int runMVM(MVM *vm)
 #define ReadConstant() (frame->function->chunk->constants.objects[ReadByte()])
 #define ReadObject() ReadConstant()
 
-#ifdef STACK_TRACE
+#ifdef DEBUG_STACK_TRACE
 
    #define DISPATCH()                                                                                   \
     do                                                                                                   \
@@ -927,6 +908,37 @@ int runMVM(MVM *vm)
         frame->ip -= offset;
         DISPATCH();
     }
+    OP_ITER:{
+        u16 offset = ReadShort();
+        MyMoIter *iterator = AS_ITER(peek(vm, 0));
+        MyMoObject *object = nextIter(vm,iterator);
+        if(IS_EMPTY(object)){
+            frame->ip = frame->ip + offset;
+        }
+        else{
+            push(vm,object);
+        }
+        DISPATCH();
+    }
+    OP_GETI:{
+        MyMoObject *iterator = pop(vm);
+        switch (iterator->type)
+        {
+            case OBJ_STRING:
+            case OBJ_LIST:
+            case OBJ_TUPLE:
+            // case OBJ_DICT:
+            // case OBJ_INSTANCE: TODO
+            {
+                push(vm,AS_OBJECT(newIter(vm, iterator)));
+                DISPATCH();
+            }
+            default:{
+                runtimeError(vm, "TypeError: cannot iterate on %s.", getType(iterator));
+                return RUNTIME_ERROR;
+            }
+        }
+    }
     OP_GETV:
     {
         MyMoObject *variable = ReadObject(); 
@@ -1425,10 +1437,6 @@ I_Result interpreter(MVM *vm, MyMoFunction *main_)
         return COMPILE_ERROR;
     vm->fiber->callFrames[0]->function = main_;
     vm->fiber->callFrames[0]->ip = main_->chunk->code;
-
-    #ifdef PRINTCODEEXEC
-        debugChunk(main_);
-    #endif
     // set __name__ to __main__
     MyMoObject *name = AS_OBJECT(newString(vm, "__name__", 8));
     MyMoObject *main = AS_OBJECT(newString(vm, "__main__", 8));

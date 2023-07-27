@@ -15,6 +15,7 @@
 #include "module.h"
 #include "code.h"
 #include "fiber.h"
+#include "iter.h"
 
 void defineBuiltInClasses(MVM *vm);
 

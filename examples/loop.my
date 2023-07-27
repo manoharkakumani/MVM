@@ -1,16 +1,16 @@
 a='manohar'
-i=0
-for i<a.__len__():
-    print(a[i])
-    i+=1
+
+for i in a:
+    print(i)
+
 
 b=[1,2,3,4,5]
-i=0
-for i<b.__len__():
-    print(b[i])
-    i+=1
-    
 
+for i in b:
+    print(i)
+
+print(i)
+i=0
 while i<b.__len__():
     print(b[i])
     i+=1

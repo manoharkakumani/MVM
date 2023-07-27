@@ -38,6 +38,8 @@ typedef enum
     OP_JMP,
     OP_CJMP,
     OP_LOOP,
+    OP_ITER,
+    OP_GETI,
     OP_GETV,
     OP_SETV,
     OP_DELV,

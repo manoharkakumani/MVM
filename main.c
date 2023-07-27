@@ -214,6 +214,10 @@ int main(int argc, const char *argv[])
             }
             vm->currentModule = newModule(vm, newString(vm, "__main__", 8), newString(vm, path, len));
             free(path);
+            #ifdef DEBUG_PRINT_CODE
+                if(function)
+                    debugChunk(function);
+            #endif
             I_Result result = interpreter(vm, function);
             if (result == COMPILE_ERROR)
             {

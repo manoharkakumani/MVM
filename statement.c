@@ -228,12 +228,24 @@ void loopStatement(Compiler *compiler)
 {
     Loop loop;
     size_t indent = getIndent(compiler);
-    startLoop(compiler, &loop);
-    if (matchToken(compiler, WHILE) || matchToken(compiler, FOR))
+    if(matchToken(compiler, FOR)){
+        consumeToken(compiler, NAME, "expected an iterator name");
+        uint name = identifierConstant(compiler, &compiler->parser->previous);
+        consumeToken(compiler, IN, "expected 'in' after iterator name");
         expression(compiler);
-    consumeToken(compiler, COLON, "expected ':' after expression.");
-    compiler->loop->loopJump = emitJump(compiler, OP_JIF);
+        emitByte(compiler,OP_GETI);
+        startLoop(compiler, &loop);
+        compiler->loop->loopJump = emitJump(compiler, OP_ITER);
+        emitBytes(compiler,OP_SETV, name);
+    }
+    else{
+        consumeToken(compiler, WHILE, "expected 'while or for' to start the loop");
+        startLoop(compiler, &loop);
+        expression(compiler);
+        compiler->loop->loopJump = emitJump(compiler, OP_JIF);
+    }
     emitByte(compiler, OP_POP);
+    consumeToken(compiler, COLON, "expected ':' after expression.");
     if (matchToken(compiler, NEWLINE))
     {
         block(compiler, indent);
@@ -352,12 +364,6 @@ MyMoFunction *endFunction(Compiler *compiler)
 {
     emitReturn(compiler);
     MyMoFunction *function = compiler->function;
-#ifdef DEBUG_PRINT_CODE
-    if (!compiler->parser->hadError)
-    {
-        disassembleChunk(currentChunk(compiler), function->name->value);
-    }
-#endif
     free(compiler);
     return function;
 }
