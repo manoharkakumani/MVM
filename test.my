@@ -1,2 +1,6 @@
 a = (1,2)
 for i in a: print(i)
+
+a = (1,2)
+
+print(a[::-1])

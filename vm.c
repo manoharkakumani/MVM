@@ -382,7 +382,7 @@ int runMVM(MVM *vm)
         }
         if (!IS_INT(index))
         {
-            runtimeError(vm, "Indices must be integers.");
+            runtimeError(vm, "TypeError: Indices must be integers.");
             return RUNTIME_ERROR;
         }
         int indexValue = INT_VAL(index);
@@ -394,7 +394,7 @@ int runMVM(MVM *vm)
             MyMoString *string = AS_STRING(object);
             if (indexValue >= string->length || -indexValue > string->length)
             {
-                runtimeError(vm, "String index out of bounds.");
+                runtimeError(vm, "TypeError: String index out of bounds.");
                 return RUNTIME_ERROR;
             }
             if (indexValue < 0)
@@ -409,12 +409,12 @@ int runMVM(MVM *vm)
             MyMoList *list = AS_LIST(object);
             if (indexValue >= list->values.count || -indexValue > list->values.count)
             {
-                runtimeError(vm, "List Index out of bounds.");
+                runtimeError(vm, "TypeError: List Index out of bounds.");
                 return RUNTIME_ERROR;
             }
             if (indexValue < 0)
             {
-                push(vm, list->values.objects[list->values.count - indexValue - 1]);
+                push(vm, list->values.objects[list->values.count + indexValue]);
             }
             else
             {
@@ -432,7 +432,7 @@ int runMVM(MVM *vm)
             }
             if (indexValue < 0)
             {
-                push(vm, tuple->values.objects[tuple->values.count - indexValue - 1]);
+                push(vm, tuple->values.objects[tuple->values.count + indexValue]);
             }
             else
             {
@@ -441,7 +441,7 @@ int runMVM(MVM *vm)
             break;
         }
         default:
-            runtimeError(vm, "Index operator cannot  applied to %s", getType(object));
+            runtimeError(vm, "TypeError: Index operator cannot  applied to %s", getType(object));
             return RUNTIME_ERROR;
         }
         DISPATCH();
@@ -455,14 +455,14 @@ int runMVM(MVM *vm)
         {
             if (!IS_INT(index))
             {
-                runtimeError(vm, "Indices must be integers.");
+                runtimeError(vm, "TypeError: Indices must be integers.");
                 return RUNTIME_ERROR;
             }
             int indexValue = INT_VAL(index);
             MyMoList *list = AS_LIST(object);
             if (indexValue >= list->values.count || -indexValue > list->values.count)
             {
-                runtimeError(vm, "List Index out of bounds.");
+                runtimeError(vm, "TypeError: List Index out of bounds.");
                 return RUNTIME_ERROR;
             }
             if (indexValue < 0)
@@ -478,7 +478,7 @@ int runMVM(MVM *vm)
             MyMoDict *dict = AS_DICT(object);
             if (!IS_STRING(index) && !IS_INT(index) && !IS_BOOL(index) && !IS_NIL(index) && !IS_DOUBLE(index))
             {
-                runtimeError(vm, "Dictionary keys must be hashable.");
+                runtimeError(vm, "TypeError: Dictionary keys must be hashable.");
                 return RUNTIME_ERROR;
             }
             setEntry(vm, dict, index, value);
@@ -515,28 +515,88 @@ int runMVM(MVM *vm)
             runtimeError(vm, "TypeError: expect integer as index to slice");
             return RUNTIME_ERROR;
         }
-        long step = IS_NIL(st) ? 1 : AS_INT(st)->value;
-        long start = IS_NIL(sta) ? 0 : AS_INT(sta)->value;
+        int step = IS_NIL(st) ? 1 : AS_INT(st)->value;
+        if(step < 0)
+        {
+               st = sta;
+               sta = ed;
+               ed = st;
+        }
+        int start = IS_NIL(sta) ? 0 : AS_INT(sta)->value;
         if (!step)
         {
-            runtimeError(vm, "slice step cannot be zero");
+            runtimeError(vm, "TypeError: slice step cannot be zero");
             return RUNTIME_ERROR;
         }
         MyMoObject *object = pop(vm);
         switch (object->type)
         {
+        case OBJ_STRING:
+        {
+            MyMoString *str = AS_STRING(object);
+            char _str[str->length];
+            int end = IS_NIL(ed) ? (step < 0 ? str->length -1 : str->length ): AS_INT(ed)->value;
+            int j = 0;
+            if (start < 0)
+            {
+                start += str->length;
+            }
+            if(end < 0){
+                end += str->length;
+            }
+            if(end > str->length )
+            {
+                end = step < 0 ? str->length -1 : str->length;
+            }
+            if (start > end || (start >= str->length && end > str->length) || start >= str->length)
+            {
+                push(vm, NEW_STRING(vm,"",0));
+                break;
+            }
+            if(step > 0)
+            {
+                for (int i = start; i < end; i += step)
+                {
+                    _str[j++] = str->value[i];
+                }
+                _str[j] = '\0';
+                push(vm, NEW_STRING(vm, _str, j));
+                break;
+            }
+            else
+            {
+                start = IS_NIL(sta) ? -1 : start;
+                for (int i = end; i > start; i += step)
+                {
+                    _str[j++] = str->value[i];
+                }
+                _str[j] = '\0';
+                push(vm, NEW_STRING(vm, _str, j));
+                break;
+            }
+        }
         case OBJ_LIST:
         {
-            if (step > 0)
+            MyMoList *lst = AS_LIST(object);
+            MyMoList *list = newList(vm);
+            int end = IS_NIL(ed) ? (step < 0 ? lst->values.count - 1 : lst->values.count) : AS_INT(ed)->value;
+            if (start < 0)
             {
-                MyMoList *lst = AS_LIST(object);
-                MyMoList *list = newList(vm);
-                int end = IS_NIL(ed) ? lst->values.count : (AS_INT(ed)->value > lst->values.count ? lst->values.count : AS_INT(ed)->value);
-                if (start > end || (start >= lst->values.count && end > lst->values.count) || start >= lst->values.count)
-                {
-                    push(vm, AS_OBJECT(list));
-                    break;
-                }
+                start += lst->values.count;
+            }
+            if(end < 0){
+                end += lst->values.count;
+            }
+            else if(end >  lst->values.count ){
+                end = step < 0 ? lst->values.count-1 : lst->values.count;
+            }
+            if (start > end || (start >= lst->values.count && end > lst->values.count) || start >= lst->values.count)
+            {
+                push(vm, AS_OBJECT(list));
+                break;
+            }
+            if (step > 0)
+            {                
                 for (int i = start; i < end; i += step)
                 {
                     writeMyMoObjectArray(vm, &list->values, lst->values.objects[i]);
@@ -546,15 +606,8 @@ int runMVM(MVM *vm)
             }
             else
             {
-                MyMoList *lst = AS_LIST(object);
-                MyMoList *list = newList(vm);
-                int end = IS_NIL(ed) ? lst->values.count : (AS_INT(ed)->value > lst->values.count ? lst->values.count : AS_INT(ed)->value);
-                if (start > end || (start >= lst->values.count && end > lst->values.count) || start >= lst->values.count)
-                {
-                    push(vm, AS_OBJECT(list));
-                    break;
-                }
-                for (int i = end - 1; i >= start; i += step)
+                start = IS_NIL(sta) ? -1 : start;
+                for (int i = end; i > start; i += step)
                 {
                     writeMyMoObjectArray(vm, &list->values, lst->values.objects[i]);
                 }
@@ -562,10 +615,49 @@ int runMVM(MVM *vm)
                 break;
             }
         }
-        case OBJ_STRING:
-            break;
+        case OBJ_TUPLE:
+        {
+            MyMoTuple *tpl = AS_TUPLE(object);
+            MyMoTuple *tuple = newTuple(vm);
+            int end = IS_NIL(ed) ? (step < 0 ? tpl->values.count - 1 : tpl->values.count) : AS_INT(ed)->value;
+            if (start < 0)
+            {
+                start += tpl->values.count;
+            }
+            if(end < 0){
+                end += tpl->values.count;
+            }
+            else if(end >  tpl->values.count ){
+                end = step < 0 ? tpl->values.count-1 : tpl->values.count;
+            }
+
+            if (start > end || (start >= tpl->values.count && end > tpl->values.count) || start >= tpl->values.count)
+            {
+                push(vm, AS_OBJECT(tuple));
+                break;
+            }
+            if (step > 0)
+            {                
+                for (int i = start; i < end; i += step)
+                {
+                    writeMyMoObjectArray(vm, &tuple->values, tpl->values.objects[i]);
+                }
+                push(vm, AS_OBJECT(tuple));
+                break;
+            }
+            else
+            {
+                start = IS_NIL(sta) ? -1 : start;
+                for (int i = end; i > start; i += step)
+                {
+                    writeMyMoObjectArray(vm, &tuple->values, tpl->values.objects[i]);
+                }
+                push(vm, AS_OBJECT(tuple));
+                break;
+            }
+        }
         default:
-            runtimeError(vm, "Can only slice on List and String but got %s", getType(object));
+            runtimeError(vm, "TypeError: can only slice on List and String but got %s", getType(object));
             return RUNTIME_ERROR;
             break;
         }
