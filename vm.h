@@ -21,6 +21,7 @@ struct vm
     MyMoDict numbers;
     MyMoDict integers;
     MyMoDict doubles;
+    MyMoDict builtInModules;
     MyMoObject *objects;
     u32 classCall;
 };

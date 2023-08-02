@@ -11,12 +11,13 @@ Token newToken(const char *src, size_t type, size_t len, size_t col, size_t inde
     tok.line = line;
     return tok;
 }
-Keywords keywords[30] = {
+Keywords keywords[KEYWORDS] = {
     {AND, "and", 3},
     {AS, "as", 2},
     {BREAK, "break", 4},
     {CASE, "case", 4},
     {CLASS, "class", 5},
+    {COND, "cond", 4},
     {CONTINUE, "continue", 8},
     {CATCH, "catch", 5},
     {DEL, "del", 3},
@@ -45,7 +46,7 @@ Keywords keywords[30] = {
 
 int iskeyword(const char *s, int len)
 {
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < KEYWORDS; i++)
     {
         if ((!memcmp(keywords[i].keyword, s, keywords[i].len)) && (!memcmp(s, keywords[i].keyword, len)))
         {

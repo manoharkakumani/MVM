@@ -83,6 +83,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return jumpInstruction("OP_JIF", 1, chunk, offset);
     case OP_CJMP:
         return jumpInstruction("OP_CJMP", 1, chunk, offset);
+    case OP_MCASE:
+        return byteInstruction("OP_MCASE", chunk, offset);
     case OP_LOOP:
         return jumpInstruction("OP_LOOP", -1, chunk, offset);
     case OP_ITER:

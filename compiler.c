@@ -128,6 +128,7 @@ ParseRule rules[] = {
     [AND] = {NULL, and_, PREC_AND},
     [CLASS] = {NULL, NULL, PREC_NONE},
     [CASE] = {NULL, NULL, PREC_NONE},
+    [COND] = {NULL, NULL, PREC_NONE},
     [ELSE] = {NULL, NULL, PREC_NONE},
     [FALSE] = {literal, NULL, PREC_NONE},
     [WHILE] = {NULL, NULL, PREC_NONE},
@@ -215,6 +216,7 @@ Compiler *initCompiler(MVM *vm, Parser *parser, FunctionType type)
     compiler->flags.dict = 0;
     compiler->flags.list = 0;
     compiler->flags.tuple = 0;
+    compiler->flags.multiCase = 0;
     MyMoFunction *function = newFunction(vm);
     function->type = type;
     if (type != FN_SCRIPT && type != FN_ARROWFN && type != FN_COMPILED)

@@ -4,6 +4,8 @@
 
 #include "common.h"
 
+#define KEYWORDS 31
+
 typedef enum
 {
     START = 0,
@@ -75,6 +77,7 @@ typedef enum
     BREAK,
     CASE,
     CLASS,
+    COND,
     CONTINUE,
     CATCH,
     DEL,
@@ -119,7 +122,7 @@ typedef struct keywords
     int len;
 } Keywords;
 
-extern Keywords keywords[30];
+extern Keywords keywords[KEYWORDS];
 
 void printToken(Token *Token);
 

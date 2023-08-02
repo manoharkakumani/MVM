@@ -27,6 +27,7 @@ MVM *initVM()
     initDict(&vm->integers);
     initDict(&vm->doubles);
     initDict(&vm->modules);
+    initDict(&vm->builtInModules);
     defineBuiltInClasses(vm);
     defineBuiltInFunctions(vm);
     return vm;
@@ -43,6 +44,7 @@ void freeVM(MVM *vm)
     freeDict(vm, &vm->integers);
     freeDict(vm, &vm->doubles);
     freeDict(vm, &vm->modules);
+    freeDict(vm, &vm->builtInModules);
     freeObjects(vm);
     free(vm);
 }
@@ -208,7 +210,6 @@ bool caller(MVM *vm, MyMoObject *callee, u32 argc)
     }
 }
 
-#define NUMBER_VAL(value) ((value->type == OBJ_INT) ? INT_VAL(value) : DOUBLE_VAL(value))
 
 #define BitwiseOp(a, b, op)                                             \
     do                                                                  \
@@ -994,6 +995,25 @@ int runMVM(MVM *vm)
         }
         DISPATCH();
     }
+    OP_MCASE:
+    {
+        int count = ReadByte();
+        MyMoObject *compare = peek(vm, count + 1);
+        MyMoObject *match = pop(vm);
+        for (int i = 0; i < count; ++i) {
+            if (isEqual(compare, match)) {
+                i++;
+                while(i <= count) {
+                    pop(vm);
+                    i++;   
+                }
+                break;
+            }
+            match = pop(vm);
+        }
+        push(vm,match);
+        DISPATCH();
+    }
     OP_LOOP:
     {
         u16 offset = ReadShort();
@@ -1267,6 +1287,14 @@ int runMVM(MVM *vm)
             push(vm, value);
             DISPATCH();
         }
+        else if (IS_MODULE(peek(vm, 1))){
+            MyMoModule *module = AS_MODULE(peek(vm, 1));
+            setEntry(vm, module->variables, ReadObject(), peek(vm, 0));
+            MyMoObject *value = pop(vm);
+            pop(vm);
+            push(vm, value);
+            DISPATCH();
+        }
         else if (IS_BUILTIN_CLASS(peek(vm, 1)))
         {
             runtimeError(vm, "TypeError: can't set attributes of built-in/extension type 'object'");
@@ -1438,8 +1466,27 @@ int runMVM(MVM *vm)
         char *path = pathResolver(vm, modulePathUse->value);
         if (path == NULL)
         {
-            runtimeError(vm, "Module '%s' not found.", path);
-            return RUNTIME_ERROR;
+            MyMoObject *module = getEntry(&vm->builtInModules, AS_OBJECT(modulePathUse));
+            if(module){
+                push(vm, module);
+                if (AS_BOOL(isUse)->value)
+                {
+                    push(vm, AS_OBJECT(moduleName));
+                }
+                DISPATCH();
+            }
+            module = loadBuiltInModule(vm,modulePathUse);
+            if(IS_EMPTY(module))
+            {
+                runtimeError(vm, "Module '%s' not found.", modulePathUse->value);
+                return RUNTIME_ERROR;
+            }
+                push(vm, module);
+                if (AS_BOOL(isUse)->value)
+                {
+                    push(vm, AS_OBJECT(moduleName));
+                }
+                DISPATCH();
         }
         char *name = strrchr(modulePathUse->value, '/');
         if (name)

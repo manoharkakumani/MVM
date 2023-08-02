@@ -44,6 +44,7 @@ typedef struct CompilerFlags
     u32 dict;
     u32 list;
     u32 tuple;
+    u32 multiCase;
     CompileType compileType;
 } CompilerFlags;
 

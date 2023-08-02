@@ -37,6 +37,7 @@ void *dispatchTable[] = {
     &&OP_JIF,
     &&OP_JMP,
     &&OP_CJMP,
+    &&OP_MCASE,
     &&OP_LOOP,
     &&OP_ITER,
     &&OP_GETI,

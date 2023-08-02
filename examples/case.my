@@ -41,7 +41,7 @@ case "Nine" :
     "six":
         print(6)
     $:
-        print("case not found")
+        print("case not found!")
 
 case "five":
     "one":
@@ -55,8 +55,8 @@ case "five":
     "five", "six":
         print("5 or 6")
 
-case 10:
-    1, 2:
-        print("1!")
+case 1:
+    1, 3:
+        print("1")
     10:
         print("10!")

@@ -6,6 +6,7 @@
 #define AS_OBJECT(object) ((MyMoObject *)object)
 
 #define IS_NUMBER(object) ((object)->type == OBJ_INT || (object)->type == OBJ_DOUBLE)
+#define NUMBER_VAL(value) ((value->type == OBJ_INT) ? INT_VAL(value) : DOUBLE_VAL(value))
 
 typedef enum
 {

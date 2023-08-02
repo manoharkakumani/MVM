@@ -83,6 +83,7 @@ typedef struct MyMoBoundMethod
   MyMoFunction *method;
 } MyMoBoundMethod;
 
+
 MyMoBuiltInFunction *newBuiltInFunction(MVM *vm, MyMoString *name, BuiltInfunction function, MyMoObjectType type);
 
 MyMoFunction *newFunction(MVM *vm);

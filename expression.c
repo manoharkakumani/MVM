@@ -301,7 +301,7 @@ void variable(Compiler *compiler, bool canAssign)
 void expression(Compiler *compiler)
 {
     parsePrecedence(compiler, PREC_ASSIGNMENT);
-    if (checkToken(compiler, COMMA) && !compiler->flags.argv && !compiler->flags.dict && !compiler->flags.list && !compiler->flags.tuple)
+    if (checkToken(compiler, COMMA) && !compiler->flags.argv && !compiler->flags.dict && !compiler->flags.list && !compiler->flags.tuple && !compiler->flags.multiCase)
     {
         advanceToken(compiler);
         u32 count = 1;

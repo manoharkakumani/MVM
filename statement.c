@@ -276,56 +276,119 @@ void loopStatement(Compiler *compiler)
     }
 }
 
-void caseStatement(Compiler *compiler)
+void compileCase(Compiler *compiler, u8 code)
 {
-    int caseEnds[256];
-    int caseCount = 0;
-    size_t indent = getIndent(compiler);
-    if (matchToken(compiler, CASE))
+    if(code == OP_CJMP)
+    {
+        compiler->flags.multiCase++;
+        expression(compiler);
+        compiler->flags.multiCase--;
+    }
+    else
     {
         expression(compiler);
     }
+    int multiCases = 0;
+    if(matchToken(compiler, COMMA) && code == OP_CJMP) {
+        compiler->flags.multiCase++;
+        do 
+        {
+            multiCases++;
+            expression(compiler);
+        } while(matchToken(compiler, COMMA) && code == OP_CJMP);
+        emitBytes(compiler, OP_MCASE, multiCases);
+        compiler->flags.multiCase--;
+    }
     consumeToken(compiler, COLON, "expected ':' after expression.");
+}
+
+void cases(Compiler *compiler, size_t indent, u8 code){
+    if(getIndent(compiler) != indent + 4){
+        if (code == OP_CJMP)
+        {
+            emitByte(compiler,OP_POP);
+        }
+        return;
+    }
+    if (checkToken(compiler, DOLLAR) && code == OP_CJMP)
+    {
+        elseStatement(compiler);
+        if (getIndent(compiler) == indent + 4)
+            errorAtCurrent(compiler, "$ must be at the last case");
+        else
+            emitByte(compiler,OP_POP);
+        return;
+    }
+    size_t c_indent = getIndent(compiler);
+    compileCase(compiler, code);
+    int CJump = emitJump(compiler, code);
+    if(code == OP_JIF){
+        emitByte(compiler, OP_POP);
+    }
+    if (matchToken(compiler, NEWLINE))
+    {
+        block(compiler, c_indent);
+    }
+    else
+    {
+        simpleStatement(compiler);
+    }
+    int Jump = emitJump(compiler, OP_JMP);
+    patchJump(compiler, CJump);
+    if(code == OP_JIF){
+        emitByte(compiler, OP_POP);
+    }
+    cases(compiler, indent, code);
+    patchJump(compiler, Jump);
+}
+
+void caseStatement(Compiler *compiler)
+{
+    size_t indent = getIndent(compiler);
+    u8 code = OP_JIF;
+    if (matchToken(compiler, CASE))
+    {
+        expression(compiler);
+        consumeToken(compiler, COLON, "expected ':' after expression.");
+        code = OP_CJMP;
+    }
+    else 
+    {
+        consumeToken(compiler, COND, "expected 'cond'.");
+    }
     if (matchToken(compiler, NEWLINE))
     {
         skipNewLines(compiler);
         if (getIndent(compiler) != (indent + 4))
             errorAtCurrent(compiler, "expected block");
-        while (getIndent(compiler) == indent + 4)
-        {
-            size_t c_indent = getIndent(compiler);
-            expression(compiler);
-            consumeToken(compiler, COLON, "expected ':' after expression.");
-            int CJump = emitJump(compiler, OP_CJMP);
-            if (matchToken(compiler, NEWLINE))
-            {
-                block(compiler, c_indent);
-            }
-            else
-            {
-                simpleStatement(compiler);
-            }
-            caseEnds[caseCount++] = emitJump(compiler, OP_JMP);
-            patchJump(compiler, CJump);
-            if (checkToken(compiler, DOLLAR))
-            {
-                elseStatement(compiler);
-                // caseEnds[caseCount++] = emitJump(compiler, OP_JMP);
-                if (getIndent(compiler) == indent + 4)
-                    errorAtCurrent(compiler, "$ must be at the last case");
-                else
-                    break;
-            }
+
+        size_t c_indent = getIndent(compiler);
+        compileCase(compiler, code);
+        int CJump = emitJump(compiler, code);
+        if(code == OP_JIF){
+            emitByte(compiler, OP_POP);
         }
+        if (matchToken(compiler, NEWLINE))
+        {
+            block(compiler, c_indent);
+        }
+        else
+        {
+            simpleStatement(compiler);
+        }
+        int Jump = emitJump(compiler, OP_JMP);
+        patchJump(compiler, CJump);
+        if(code == OP_JIF){
+        emitByte(compiler, OP_POP);
+        }
+        cases(compiler, indent, code);
+        patchJump(compiler, Jump);
     }
     else
     {
         errorAtCurrent(compiler, "expected an indented block");
     }
-    for (int i = 0; i < caseCount; i++)
-    {
-        patchJump(compiler, caseEnds[i]);
-    }
+
 }
 
 void simpleStatement(Compiler *compiler)
@@ -643,6 +706,7 @@ void flowStatement(Compiler *compiler)
         matchToken(compiler, ELSE);
         break;
     case CASE:
+    case COND:
         caseStatement(compiler);
         break;
     case FOR:
@@ -763,7 +827,7 @@ void moduleStatement(Compiler *compiler)
 }
 void statement(Compiler *compiler)
 {
-    if (checkToken(compiler, IF) || checkToken(compiler, ELIF) || checkToken(compiler, ELSE) || checkToken(compiler, CASE) || checkToken(compiler, WHILE) || checkToken(compiler, FOR))
+    if (checkToken(compiler, IF) || checkToken(compiler, ELIF) || checkToken(compiler, ELSE) || checkToken(compiler, CASE) || checkToken(compiler, COND) || checkToken(compiler, WHILE) || checkToken(compiler, FOR))
         flowStatement(compiler);
     else if (checkToken(compiler, CLASS) || checkToken(compiler, FN))
         compoundStatement(compiler);
