@@ -161,7 +161,7 @@ bool caller(MVM *vm, MyMoObject *callee, u32 argc)
         MyMoObject *newMethed = NEW_STRING(vm, "__new__", 7);
         MyMoClass *klass = AS_CLASS(callee);
         MyMoObject *__new__ = getEntry(vm->builtInClasses[OBJ_OBJECT]->methods, newMethed);
-        BuiltInfunction function = AS_BUILTIN_FUNCTION(__new__)->function;    
+        BuiltInfunction function = AS_BUILTIN_FUNCTION(__new__)->function;
         push(vm, callee);
         MyMoObject *result = function(vm, 1, &callee);
         if (IS_EMPTY(result))
@@ -209,7 +209,6 @@ bool caller(MVM *vm, MyMoObject *callee, u32 argc)
         return false;
     }
 }
-
 
 #define BitwiseOp(a, b, op)                                             \
     do                                                                  \
@@ -278,7 +277,7 @@ int runMVM(MVM *vm)
 
 #ifdef DEBUG_STACK_TRACE
 
-   #define DISPATCH()                                                                                   \
+#define DISPATCH()                                                                                       \
     do                                                                                                   \
     {                                                                                                    \
         printStack(vm);                                                                                  \
@@ -288,7 +287,9 @@ int runMVM(MVM *vm)
 
 #else
 
-    #define DISPATCH() goto *dispatchTable[ReadByte()]
+#define DISPATCH() \
+                   \
+    goto *dispatchTable[ReadByte()]
 
 #endif
 
@@ -517,11 +518,11 @@ int runMVM(MVM *vm)
             return RUNTIME_ERROR;
         }
         int step = IS_NIL(st) ? 1 : AS_INT(st)->value;
-        if(step < 0)
+        if (step < 0)
         {
-               st = sta;
-               sta = ed;
-               ed = st;
+            st = sta;
+            sta = ed;
+            ed = st;
         }
         int start = IS_NIL(sta) ? 0 : AS_INT(sta)->value;
         if (!step)
@@ -536,25 +537,26 @@ int runMVM(MVM *vm)
         {
             MyMoString *str = AS_STRING(object);
             char _str[str->length];
-            int end = IS_NIL(ed) ? (step < 0 ? str->length -1 : str->length ): AS_INT(ed)->value;
+            int end = IS_NIL(ed) ? (step < 0 ? str->length - 1 : str->length) : AS_INT(ed)->value;
             int j = 0;
             if (start < 0)
             {
                 start += str->length;
             }
-            if(end < 0){
+            if (end < 0)
+            {
                 end += str->length;
             }
-            if(end > str->length )
+            if (end > str->length)
             {
-                end = step < 0 ? str->length -1 : str->length;
+                end = step < 0 ? str->length - 1 : str->length;
             }
             if (start > end || (start >= str->length && end > str->length) || start >= str->length)
             {
-                push(vm, NEW_STRING(vm,"",0));
+                push(vm, NEW_STRING(vm, "", 0));
                 break;
             }
-            if(step > 0)
+            if (step > 0)
             {
                 for (int i = start; i < end; i += step)
                 {
@@ -585,11 +587,13 @@ int runMVM(MVM *vm)
             {
                 start += lst->values.count;
             }
-            if(end < 0){
+            if (end < 0)
+            {
                 end += lst->values.count;
             }
-            else if(end >  lst->values.count ){
-                end = step < 0 ? lst->values.count-1 : lst->values.count;
+            else if (end > lst->values.count)
+            {
+                end = step < 0 ? lst->values.count - 1 : lst->values.count;
             }
             if (start > end || (start >= lst->values.count && end > lst->values.count) || start >= lst->values.count)
             {
@@ -597,7 +601,7 @@ int runMVM(MVM *vm)
                 break;
             }
             if (step > 0)
-            {                
+            {
                 for (int i = start; i < end; i += step)
                 {
                     writeMyMoObjectArray(vm, &list->values, lst->values.objects[i]);
@@ -625,11 +629,13 @@ int runMVM(MVM *vm)
             {
                 start += tpl->values.count;
             }
-            if(end < 0){
+            if (end < 0)
+            {
                 end += tpl->values.count;
             }
-            else if(end >  tpl->values.count ){
-                end = step < 0 ? tpl->values.count-1 : tpl->values.count;
+            else if (end > tpl->values.count)
+            {
+                end = step < 0 ? tpl->values.count - 1 : tpl->values.count;
             }
 
             if (start > end || (start >= tpl->values.count && end > tpl->values.count) || start >= tpl->values.count)
@@ -638,7 +644,7 @@ int runMVM(MVM *vm)
                 break;
             }
             if (step > 0)
-            {                
+            {
                 for (int i = start; i < end; i += step)
                 {
                     writeMyMoObjectArray(vm, &tuple->values, tpl->values.objects[i]);
@@ -699,7 +705,7 @@ int runMVM(MVM *vm)
             }
             if (inplace)
             {
-               UNUSED(ReadByte());
+                UNUSED(ReadByte());
             }
             push(vm, method);
             push(vm, a);
@@ -744,7 +750,7 @@ int runMVM(MVM *vm)
         {
             if (inplace)
             {
-               UNUSED(ReadByte());
+                UNUSED(ReadByte());
             }
 
             OperatorOverLoad(a, b, inplace ? ">=" : "<");
@@ -1000,18 +1006,21 @@ int runMVM(MVM *vm)
         int count = ReadByte();
         MyMoObject *compare = peek(vm, count + 1);
         MyMoObject *match = pop(vm);
-        for (int i = 0; i < count; ++i) {
-            if (isEqual(compare, match)) {
+        for (int i = 0; i < count; ++i)
+        {
+            if (isEqual(compare, match))
+            {
                 i++;
-                while(i <= count) {
+                while (i <= count)
+                {
                     pop(vm);
-                    i++;   
+                    i++;
                 }
                 break;
             }
             match = pop(vm);
         }
-        push(vm,match);
+        push(vm, match);
         DISPATCH();
     }
     OP_LOOP:
@@ -1020,40 +1029,45 @@ int runMVM(MVM *vm)
         frame->ip -= offset;
         DISPATCH();
     }
-    OP_ITER:{
+    OP_ITER:
+    {
         u16 offset = ReadShort();
         MyMoIter *iterator = AS_ITER(peek(vm, 0));
-        MyMoObject *object = nextIter(vm,iterator);
-        if(IS_EMPTY(object)){
+        MyMoObject *object = nextIter(vm, iterator);
+        if (IS_EMPTY(object))
+        {
             frame->ip = frame->ip + offset;
         }
-        else{
-            push(vm,object);
+        else
+        {
+            push(vm, object);
         }
         DISPATCH();
     }
-    OP_GETI:{
+    OP_GETI:
+    {
         MyMoObject *iterator = pop(vm);
         switch (iterator->type)
         {
-            case OBJ_STRING:
-            case OBJ_LIST:
-            case OBJ_TUPLE:
+        case OBJ_STRING:
+        case OBJ_LIST:
+        case OBJ_TUPLE:
             // case OBJ_DICT:
             // case OBJ_INSTANCE: TODO
             {
-                push(vm,AS_OBJECT(newIter(vm, iterator)));
+                push(vm, AS_OBJECT(newIter(vm, iterator)));
                 DISPATCH();
             }
-            default:{
-                runtimeError(vm, "TypeError: cannot iterate on %s.", getType(iterator));
-                return RUNTIME_ERROR;
-            }
+        default:
+        {
+            runtimeError(vm, "TypeError: cannot iterate on %s.", getType(iterator));
+            return RUNTIME_ERROR;
+        }
         }
     }
     OP_GETV:
     {
-        MyMoObject *variable = ReadObject(); 
+        MyMoObject *variable = ReadObject();
         MyMoObject *value = NULL;
         if (vm->currentClass)
         {
@@ -1239,27 +1253,32 @@ int runMVM(MVM *vm)
         push(vm, AS_OBJECT(klass));
         DISPATCH();
     }
-    OP_SUPERARGS:{
+    OP_SUPERARGS:
+    {
         int argc = INT_VAL(ReadConstant());
-        for (size_t i = 0; i < argc ; i++)
+        for (size_t i = 0; i < argc; i++)
         {
             MyMoObject *superClass = pop(vm);
-            if(IS_CLASS(superClass) || IS_BUILTIN_CLASS(superClass)){
-                writeMyMoObjectArray(vm,&vm->currentClass->superClasses,superClass);
-                if(IS_CLASS(superClass)){
-                    copyDict(vm,AS_CLASS(superClass)->methods,vm->currentClass->methods);
-                    copyDict(vm,AS_CLASS(superClass)->fields,vm->currentClass->fields);
-                    copyDict(vm,AS_CLASS(superClass)->variables,vm->currentClass->variables);
+            if (IS_CLASS(superClass) || IS_BUILTIN_CLASS(superClass))
+            {
+                writeMyMoObjectArray(vm, &vm->currentClass->superClasses, superClass);
+                if (IS_CLASS(superClass))
+                {
+                    copyDict(vm, AS_CLASS(superClass)->methods, vm->currentClass->methods);
+                    copyDict(vm, AS_CLASS(superClass)->fields, vm->currentClass->fields);
+                    copyDict(vm, AS_CLASS(superClass)->variables, vm->currentClass->variables);
                     vm->currentClass->init = AS_CLASS(superClass)->init;
                 }
-                else{
-                    copyDict(vm,AS_BUILTIN_CLASS(superClass)->methods,vm->currentClass->methods);
+                else
+                {
+                    copyDict(vm, AS_BUILTIN_CLASS(superClass)->methods, vm->currentClass->methods);
                 }
             }
-            else{
+            else
+            {
                 runtimeError(vm, "TypeError: only class can be inherated");
             }
-        }        
+        }
         DISPATCH();
     }
     OP_ENDCLASS:
@@ -1287,7 +1306,8 @@ int runMVM(MVM *vm)
             push(vm, value);
             DISPATCH();
         }
-        else if (IS_MODULE(peek(vm, 1))){
+        else if (IS_MODULE(peek(vm, 1)))
+        {
             MyMoModule *module = AS_MODULE(peek(vm, 1));
             setEntry(vm, module->variables, ReadObject(), peek(vm, 0));
             MyMoObject *value = pop(vm);
@@ -1467,7 +1487,8 @@ int runMVM(MVM *vm)
         if (path == NULL)
         {
             MyMoObject *module = getEntry(&vm->builtInModules, AS_OBJECT(modulePathUse));
-            if(module){
+            if (module)
+            {
                 push(vm, module);
                 if (AS_BOOL(isUse)->value)
                 {
@@ -1475,18 +1496,18 @@ int runMVM(MVM *vm)
                 }
                 DISPATCH();
             }
-            module = loadBuiltInModule(vm,modulePathUse);
-            if(IS_EMPTY(module))
+            module = loadBuiltInModule(vm, modulePathUse);
+            if (IS_EMPTY(module))
             {
                 runtimeError(vm, "Module '%s' not found.", modulePathUse->value);
                 return RUNTIME_ERROR;
             }
-                push(vm, module);
-                if (AS_BOOL(isUse)->value)
-                {
-                    push(vm, AS_OBJECT(moduleName));
-                }
-                DISPATCH();
+            push(vm, module);
+            if (AS_BOOL(isUse)->value)
+            {
+                push(vm, AS_OBJECT(moduleName));
+            }
+            DISPATCH();
         }
         char *name = strrchr(modulePathUse->value, '/');
         if (name)
@@ -1526,7 +1547,7 @@ int runMVM(MVM *vm)
         function->type = FN_MODULE;
         callFunction(vm, function, 0);
         frame = vm->fiber->callFrames[vm->fiber->frameCount];
-        setEntry(vm, &frame->locals, NEW_STRING(vm,"__name__",8), AS_OBJECT(moduleName));
+        setEntry(vm, &frame->locals, NEW_STRING(vm, "__name__", 8), AS_OBJECT(moduleName));
         MyMoModule *currentModule = newModule(vm, moduleName, modulePath);
         currentModule->parent = vm->currentModule;
         vm->currentModule = currentModule;
@@ -1555,7 +1576,7 @@ int runMVM(MVM *vm)
     OP_COPY:
     {
         MyMoModule *module = AS_MODULE(pop(vm));
-        copyDict(vm, module->variables,(((IS_FIBER_ROOT(vm->fiber)) && vm->fiber->frameCount == 0) ? &vm->globals : &frame->locals));
+        copyDict(vm, module->variables, (((IS_FIBER_ROOT(vm->fiber)) && vm->fiber->frameCount == 0) ? &vm->globals : &frame->locals));
         DISPATCH();
     }
     }

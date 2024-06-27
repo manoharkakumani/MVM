@@ -1,0 +1,30 @@
+a=4
+cond 
+    a == 1:
+        print("one")
+    a == 2:
+        print("two")
+    a == 3:
+        print("3")
+    a == 4:
+        print("four")
+    a == 5:
+        print("five")
+    True:
+        print("six")
+
+cond 
+    1,2:
+        print("one")
+    a == 2:
+        print("two")
+    a == 3:
+        print("three")
+    a == 4:
+        print("four")
+    a == 5:
+        print("five")
+    a == 6:
+        print("six")
+    True:
+        print("default")

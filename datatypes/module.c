@@ -104,5 +104,5 @@ MyMoObject *loadBuiltInModule(MVM *vm, MyMoString *name){
     //     fputs(dlerror(), stderr);
     //     return NEW_EMPTY;
     // }
-   return mathModule(vm);
+   return NEW_EMPTY;
 }

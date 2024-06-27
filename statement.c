@@ -228,17 +228,19 @@ void loopStatement(Compiler *compiler)
 {
     Loop loop;
     size_t indent = getIndent(compiler);
-    if(matchToken(compiler, FOR)){
+    if (matchToken(compiler, FOR))
+    {
         consumeToken(compiler, NAME, "expected an iterator name");
         uint name = identifierConstant(compiler, &compiler->parser->previous);
         consumeToken(compiler, IN, "expected 'in' after iterator name");
         expression(compiler);
-        emitByte(compiler,OP_GETI);
+        emitByte(compiler, OP_GETI);
         startLoop(compiler, &loop);
         compiler->loop->loopJump = emitJump(compiler, OP_ITER);
-        emitBytes(compiler,OP_SETV, name);
+        emitBytes(compiler, OP_SETV, name);
     }
-    else{
+    else
+    {
         consumeToken(compiler, WHILE, "expected 'while or for' to start the loop");
         startLoop(compiler, &loop);
         expression(compiler);
@@ -278,7 +280,7 @@ void loopStatement(Compiler *compiler)
 
 void compileCase(Compiler *compiler, u8 code)
 {
-    if(code == OP_CJMP)
+    if (code == OP_CJMP)
     {
         compiler->flags.multiCase++;
         expression(compiler);
@@ -289,41 +291,53 @@ void compileCase(Compiler *compiler, u8 code)
         expression(compiler);
     }
     int multiCases = 0;
-    if(matchToken(compiler, COMMA) && code == OP_CJMP) {
+    if (matchToken(compiler, COMMA) && code == OP_CJMP)
+    {
         compiler->flags.multiCase++;
-        do 
+        do
         {
             multiCases++;
             expression(compiler);
-        } while(matchToken(compiler, COMMA) && code == OP_CJMP);
+        } while (matchToken(compiler, COMMA) && code == OP_CJMP);
         emitBytes(compiler, OP_MCASE, multiCases);
         compiler->flags.multiCase--;
     }
     consumeToken(compiler, COLON, "expected ':' after expression.");
 }
 
-void cases(Compiler *compiler, size_t indent, u8 code){
-    if(getIndent(compiler) != indent + 4){
+void cases(Compiler *compiler, size_t indent, u8 code, int FallJump)
+{
+    if (getIndent(compiler) != indent + 4)
+    {
         if (code == OP_CJMP)
         {
-            emitByte(compiler,OP_POP);
+            emitByte(compiler, OP_POP);
         }
         return;
     }
     if (checkToken(compiler, DOLLAR) && code == OP_CJMP)
     {
+        if (FallJump != -1)
+        {
+            patchJump(compiler, FallJump);
+        }
         elseStatement(compiler);
         if (getIndent(compiler) == indent + 4)
             errorAtCurrent(compiler, "$ must be at the last case");
         else
-            emitByte(compiler,OP_POP);
+            emitByte(compiler, OP_POP);
         return;
     }
     size_t c_indent = getIndent(compiler);
     compileCase(compiler, code);
     int CJump = emitJump(compiler, code);
-    if(code == OP_JIF){
+    if (code == OP_JIF)
+    {
         emitByte(compiler, OP_POP);
+    }
+    if (FallJump != -1)
+    {
+        patchJump(compiler, FallJump);
     }
     if (matchToken(compiler, NEWLINE))
     {
@@ -333,12 +347,19 @@ void cases(Compiler *compiler, size_t indent, u8 code){
     {
         simpleStatement(compiler);
     }
+    int FJump = -1;
+    if (matchToken(compiler, FALL) && code == OP_CJMP)
+    {
+        FJump = emitJump(compiler, OP_JMP);
+        consumeToken(compiler, NEWLINE, "expected 'Newline' after fall.");
+    }
     int Jump = emitJump(compiler, OP_JMP);
     patchJump(compiler, CJump);
-    if(code == OP_JIF){
+    if (code == OP_JIF)
+    {
         emitByte(compiler, OP_POP);
     }
-    cases(compiler, indent, code);
+    cases(compiler, indent, code, FJump);
     patchJump(compiler, Jump);
 }
 
@@ -352,7 +373,7 @@ void caseStatement(Compiler *compiler)
         consumeToken(compiler, COLON, "expected ':' after expression.");
         code = OP_CJMP;
     }
-    else 
+    else
     {
         consumeToken(compiler, COND, "expected 'cond'.");
     }
@@ -365,7 +386,8 @@ void caseStatement(Compiler *compiler)
         size_t c_indent = getIndent(compiler);
         compileCase(compiler, code);
         int CJump = emitJump(compiler, code);
-        if(code == OP_JIF){
+        if (code == OP_JIF)
+        {
             emitByte(compiler, OP_POP);
         }
         if (matchToken(compiler, NEWLINE))
@@ -376,19 +398,25 @@ void caseStatement(Compiler *compiler)
         {
             simpleStatement(compiler);
         }
+        int FJump = -1;
+        if (matchToken(compiler, FALL) && code == OP_CJMP)
+        {
+            FJump = emitJump(compiler, OP_JMP);
+            consumeToken(compiler, NEWLINE, "expected 'Newline' after fall.");
+        }
         int Jump = emitJump(compiler, OP_JMP);
         patchJump(compiler, CJump);
-        if(code == OP_JIF){
-        emitByte(compiler, OP_POP);
+        if (code == OP_JIF)
+        {
+            emitByte(compiler, OP_POP);
         }
-        cases(compiler, indent, code);
+        cases(compiler, indent, code, FJump);
         patchJump(compiler, Jump);
     }
     else
     {
         errorAtCurrent(compiler, "expected an indented block");
     }
-
 }
 
 void simpleStatement(Compiler *compiler)
@@ -638,26 +666,27 @@ void classStatement(Compiler *compiler)
     u8 name = identifierConstant(compiler, &compiler->parser->previous);
     u8 superClasses = 0;
     emitBytes(compiler, OP_CLASS, name);
-    if(matchToken(compiler,LPAR))
+    if (matchToken(compiler, LPAR))
     {
-    if (!checkToken(compiler, RPAR))
-    {
-        compiler->flags.tuple = true;
-        do
+        if (!checkToken(compiler, RPAR))
         {
-            if (superClasses == 255)
+            compiler->flags.tuple = true;
+            do
             {
-                error(compiler, "cannot have more than 255 super classes.");
-            }
-            expression(compiler);
-            superClasses++;
-        } while (matchToken(compiler, COMMA));
-        compiler->flags.tuple = false;
-    }
-    if(superClasses){
-      emitBytes(compiler,OP_SUPERARGS,makeConstant(compiler,NEW_INT(compiler->parser->vm,superClasses)));
-    }
-    consumeToken(compiler, RPAR, "expected ')' after arguments.");
+                if (superClasses == 255)
+                {
+                    error(compiler, "cannot have more than 255 super classes.");
+                }
+                expression(compiler);
+                superClasses++;
+            } while (matchToken(compiler, COMMA));
+            compiler->flags.tuple = false;
+        }
+        if (superClasses)
+        {
+            emitBytes(compiler, OP_SUPERARGS, makeConstant(compiler, NEW_INT(compiler->parser->vm, superClasses)));
+        }
+        consumeToken(compiler, RPAR, "expected ')' after arguments.");
     }
     consumeToken(compiler, COLON, "expected ':' before class body.");
     if (matchToken(compiler, NEWLINE))
@@ -722,17 +751,18 @@ void fromStatement(Compiler *compiler)
 {
     advanceToken(compiler);
     if (!matchToken(compiler, STRING))
-    { 
+    {
         errorAtCurrent(compiler, "expected module name Ex:- 'from \"module\" use abc'");
     }
     u32 path = identifierConstant(compiler, &compiler->parser->previous);
     consumeToken(compiler, USE, "expected 'use' after module name");
-    if(matchToken(compiler, STAR)){
+    if (matchToken(compiler, STAR))
+    {
         emitByte(compiler, OP_FALSE);
         emitBytes(compiler, OP_USE, path);
-        consumeToken(compiler,NEWLINE, "expected newline after * iin use statement");
-        emitByte(compiler,OP_COPY);
-        return;        
+        consumeToken(compiler, NEWLINE, "expected newline after * iin use statement");
+        emitByte(compiler, OP_COPY);
+        return;
     }
 multiFrom:
     emitByte(compiler, OP_FALSE);
@@ -749,7 +779,7 @@ multiFrom:
         if (!matchToken(compiler, NAME))
         {
             errorAtCurrent(compiler, "expected module name  variable Ex:- 'from \"module\" use abc as a'");
-        }    
+        }
         name = identifierConstant(compiler, &compiler->parser->previous);
     }
     emitBytes(compiler, OP_SETV, name);

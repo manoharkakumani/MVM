@@ -4,7 +4,7 @@
 
 #include "common.h"
 
-#define KEYWORDS 31
+#define KEYWORDS 32
 
 typedef enum
 {
@@ -83,6 +83,7 @@ typedef enum
     DEL,
     ELSE,
     ELIF,
+    FALL,
     FALSE,
     FINALLY,
     FOR,

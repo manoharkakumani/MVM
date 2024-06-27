@@ -60,3 +60,13 @@ case 1:
         print("1")
     10:
         print("10!")
+
+case 1:
+    1, 3:
+        print("1")
+    fall
+    10:
+        print("fallthrough")
+    fall
+    $:
+        print("case not found!")

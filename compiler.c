@@ -251,6 +251,8 @@ MyMoFunction *compile(MVM *vm, const char *src, const char *path, CompileType ty
     if (function)
     {
         function->name = newString(vm, path, strlen(path));
+#ifdef NOCACHE
+#else
         if (path && type != COMPILE_REPL)
         {
             char *cachePath = malloc(strlen(path) + 2);
@@ -261,6 +263,7 @@ MyMoFunction *compile(MVM *vm, const char *src, const char *path, CompileType ty
             fclose(stream);
             free(cachePath);
         }
+#endif
     }
     return function;
 }

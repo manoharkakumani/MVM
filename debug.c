@@ -136,7 +136,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         printf("\n");
         return offset;
     }
-    case OP_MET:{
+    case OP_MET:
+    {
         return constantInstruction("OP_MET", chunk, offset);
     }
     case OP_CALL:
@@ -165,11 +166,10 @@ int disassembleInstruction(Chunk *chunk, int offset)
     }
 }
 
-
- void debugChunk(MyMoFunction *function)
+void debugChunk(MyMoFunction *function)
 {
     MyMoObjectArray constants = function->chunk->constants;
-    for(int i=0; i<constants.count; i++)
+    for (int i = 0; i < constants.count; i++)
     {
         if (!(IS_FUNCTION(constants.objects[i])))
         {
@@ -178,5 +178,5 @@ int disassembleInstruction(Chunk *chunk, int offset)
         debugChunk(AS_FUNCTION(constants.objects[i]));
     }
     printf("======== %s =========\n", function->name->value);
-    printChunk(function->chunk);  
-  }
+    printChunk(function->chunk);
+}

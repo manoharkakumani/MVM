@@ -23,6 +23,7 @@ Keywords keywords[KEYWORDS] = {
     {DEL, "del", 3},
     {ELSE, "else", 4},
     {ELIF, "elif", 4},
+    {FALL, "fall", 4},
     {FALSE, "False", 5},
     {FINALLY, "final", 5},
     {FOR, "for", 3},
