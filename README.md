@@ -1,4 +1,4 @@
-# MVM
+# MVM / MyMo
 
 Byte Code Interpreter 
 
